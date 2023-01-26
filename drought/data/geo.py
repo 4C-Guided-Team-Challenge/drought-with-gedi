@@ -3,6 +3,8 @@ import geopandas as gpd
 import numpy as np
 import ee
 
+POLYGONS_DIR = '../../data/polygons/Amazonia_drought_gradient_polygons.shp'
+
 
 def get_ee_polygons():
     ''' Returns a list of GTC Regions of Interest, as ee geometries. '''
@@ -12,8 +14,7 @@ def get_ee_polygons():
 
 def get_gpd_polygons():
     ''' Returns a list of GTC Regions of Interest, as geopandas geometries. '''
-    return gpd.read_file(
-        "../data/polygons/Amazonia_drought_gradient_polygons.shp")
+    return gpd.read_file(POLYGONS_DIR)
 
 
 def _gdf_to_ee_polygon(gdf_polygon):
