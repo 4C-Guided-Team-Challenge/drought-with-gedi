@@ -23,6 +23,7 @@ def gedi_sql_query(
     force: bool = False,
 ):
 
+    # NOTE additonal conditions can be specified here
     conditions = []
     # Temporal conditions
     if start_time is not None and end_time is not None:

@@ -6,7 +6,7 @@ import pandas as pd
 data_path = "/maps/forecol/data/GEDI/level2B"
 files = [f for f in os.listdir(data_path) if f.endswith(".h5")]
 
-# TODO no time info, granule['METADATA']['DatasetIdentification'] is empty
+# TODO read the time from the h5 file name, granule['METADATA']['DatasetIdentification'] is empty
 # data = {
 #     "pai": np.array([]),
 #     "l2b_quality_flag": np.array([]),
