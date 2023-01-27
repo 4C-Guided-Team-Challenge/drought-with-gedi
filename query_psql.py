@@ -6,8 +6,6 @@ shape = gpd.read_file("Amazonia_drought_gradient_polygons/Amazonia_drought_gradi
 
 database = GediDatabase()
 
-# TODO how to get the timestamp for each fetched shot?
-# TODO do we need to further filter the quality flags?
 # Load specified data columns for all GEDI shots within shape for 2019
 columns = ["pai", "l2b_quality_flag", "shot_number", "lon_lowestmode", "lat_lowestmode"]
 # iterate over time
