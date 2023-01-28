@@ -30,7 +30,8 @@ def get_monthly_climate_data(start_date: ee.Date, end_date: ee.Date,
 
     # Clip image to include only regions of interest specified in geometries.
     clipped = climate_stack.map(lambda img: ee.ImageCollection(
-        [img.clip(geometry) for geometry in geometries]).mosaic())
+        [img.clip(geometry) for geometry in geometries]).mosaic()
+        .copyProperties(img, ['year', 'month', 'date', 'system:time_start']))
     return clipped
 
 
@@ -51,8 +52,8 @@ def make_monthly_composite(ic: ee.ImageCollection, aggregator: Callable,
                 # IMPORTANT: Add a date property to all images.
                 # We depend on this elsewhere for stacking images.
                 .set("date", date.format("YYYY-MM"))
-                .set("month", date.format("MM"))
-                .set("year", date.format("YYYY"))
+                .set("month", date.get("month"))
+                .set("year", date.get("year"))
                 .set("system:time_start", date.millis()))
 
     return ee.ImageCollection(months.map(aggregate))
@@ -92,10 +93,9 @@ def get_monthly_radiation_data(start_date: ee.Date, end_date: ee.Date):
         TODO: Consider using MCD18C2.061 if we need PAR instead of downward
         radiation and if we need 5km resolution, instead of 11km.
     '''
-    radiation_monthly = \
-        ee.ImageCollection("ECMWF/ERA5_LAND/MONTHLY") \
-          .select(['surface_net_solar_radiation'], ['radiation']) \
-          .filterDate(start_date, end_date)
+    radiation_monthly = ee.ImageCollection("ECMWF/ERA5_LAND/MONTHLY") \
+        .select(['surface_net_solar_radiation'], ['radiation']) \
+        .filterDate(start_date, end_date)
 
     radiation_monthly = make_monthly_composite(radiation_monthly,
                                                lambda x: x.mean(),
@@ -134,6 +134,7 @@ def get_monthly_temperature_data(start_date: ee.Date, end_date: ee.Date):
 
         return (img.select(["LST_Day_1km"], ["temperature"])
                 .multiply(0.02)
+                .subtract(273.15)  # convert to Celsius
                 .updateMask(img.select("QC_Day").eq(0))
                 .copyProperties(img, ["system:time_start"]))
 
