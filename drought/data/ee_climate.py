@@ -1,10 +1,10 @@
 '''
-    This module contains methods for importing all the relevant climatic data
-    from Google Earth Engine.
+This module contains methods for importing all the relevant climatic data
+from Google Earth Engine.
 
-    Before calling any of the methods, make sure to authenticate with earth
-    engine. See: https://developers.google.com/earth-engine/guides/python_install#authentication # noqa
-    for more details.
+Before calling any of the methods, make sure to authenticate with earth
+engine. See: https://developers.google.com/earth-engine/guides/python_install#authentication # noqa
+for more details.
 '''
 import ee
 from typing import Callable
@@ -13,10 +13,10 @@ from typing import Callable
 def get_monthly_climate_data(start_date: ee.Date, end_date: ee.Date,
                              geometries: list[ee.Geometry]):
     '''
-        Returns ImageCollection that combines all climate data.
+    Returns ImageCollection that combines all climate data.
 
-        Each climate variable is stored as a separate Band. Images are clipped
-        to contain only regions of interest.
+    Each climate variable is stored as a separate Band. Images are clipped
+    to contain only regions of interest.
     '''
 
     p_monthly = get_monthly_precipitation_data(start_date, end_date)
@@ -38,9 +38,9 @@ def get_monthly_climate_data(start_date: ee.Date, end_date: ee.Date,
 def make_monthly_composite(ic: ee.ImageCollection, aggregator: Callable,
                            start_date: ee.Date, end_date: ee.Date):
     '''
-      Aggregates images for each month using the aggregator function.
+    Aggregates images for each month using the aggregator function.
 
-      Common aggregators can be mean, sum, max, etc.
+    Common aggregators can be mean, sum, max, etc.
     '''
     n_months = end_date.difference(start_date, 'month').subtract(1)
     months = ee.List.sequence(0, n_months) \
@@ -61,8 +61,8 @@ def make_monthly_composite(ic: ee.ImageCollection, aggregator: Callable,
 
 def stack_monthly_composites(ic1: ee.ImageCollection, ic2: ee.ImageCollection):
     '''
-        Stacks image collections together, doing the inner join on 'date'
-        property.
+    Stacks image collections together, doing the inner join on 'date'
+    property.
     '''
 
     filter_month = ee.Filter.equals(leftField='date', rightField='date')
@@ -87,11 +87,11 @@ def get_monthly_precipitation_data(start_date: ee.Date, end_date: ee.Date):
 
 def get_monthly_radiation_data(start_date: ee.Date, end_date: ee.Date):
     '''
-        Get aggregated montly downward radiation from ERA5 dataset.
+    Get aggregated montly downward radiation from ERA5 dataset.
 
-        Using ERA monthly now for simplicity, since it's already aggregated.
-        TODO: Consider using MCD18C2.061 if we need PAR instead of downward
-        radiation and if we need 5km resolution, instead of 11km.
+    Using ERA monthly now for simplicity, since it's already aggregated.
+    TODO: Consider using MCD18C2.061 if we need PAR instead of downward
+    radiation and if we need 5km resolution, instead of 11km.
     '''
     radiation_monthly = ee.ImageCollection("ECMWF/ERA5_LAND/MONTHLY") \
         .select(['surface_net_solar_radiation'], ['radiation']) \
@@ -119,22 +119,22 @@ def get_monthly_radiation_data(start_date: ee.Date, end_date: ee.Date):
 
 def get_monthly_temperature_data(start_date: ee.Date, end_date: ee.Date):
     '''
-        Get mean monthly temperature from MODIS.
+    Get mean monthly temperature from MODIS.
 
-        It's possible once we select image resolution, we won't have data
-        for some months if they were cloudy.
-        TODO: Decide what to do in these cases.
+    It's possible once we select image resolution, we won't have data
+    for some months if they were cloudy.
+    TODO: Decide what to do in these cases.
     '''
 
     def scaleAndMaskTemp(img):
         '''
-            Filters images based on the quality flag QC_Day value (0 is valid),
-            and scales data with 0.02 scale.
+        Filters images based on the quality flag QC_Day value (0 is valid),
+        and scales data with 0.02 scale. Converts to Celsius.
         '''
 
         return (img.select(["LST_Day_1km"], ["temperature"])
                 .multiply(0.02)
-                .subtract(273.15)  # convert to Celsius
+                .subtract(273.15)  # Convert to Celsius.
                 .updateMask(img.select("QC_Day").eq(0))
                 .copyProperties(img, ["system:time_start"]))
 
