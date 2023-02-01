@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 
-data_path = "/maps/forecol/data/GEDI/level2B"
+data_path = "/maps/forecol/data/GEDI/level2A"
 files = [f for f in os.listdir(data_path) if f.endswith(".h5")]
 
 # TODO read the time from the h5 file name, granule['METADATA']['DatasetIdentification'] is empty
