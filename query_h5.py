@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 
-data_path = "/maps/forecol/data/GEDI/level2A"
+data_path = "/maps/forecol/data/GEDI/level2B"
 files = [f for f in os.listdir(data_path) if f.endswith(".h5")]
 
 # TODO read the time from the h5 file name, granule['METADATA']['DatasetIdentification'] is empty
@@ -19,7 +19,6 @@ data = dict({})
 for f in files:
     fname = os.path.join(data_path, f)
     granule = h5py.File(fname, "r")
-    # TODO which beam to use and for each beam, which shots to use?
     filter = np.array(granule['BEAM0000']['l2b_quality_flag'])==1
     data["pai"] = np.array(granule['BEAM0000']['pai'])[filter]
     data["l2b_quality_flag"] = np.array(granule['BEAM0000']['l2b_quality_flag'])[filter]
