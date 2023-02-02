@@ -6,12 +6,36 @@ Before calling any of the methods, make sure to authenticate with earth
 engine. See: https://developers.google.com/earth-engine/guides/python_install#authentication # noqa
 for more details.
 '''
+from drought.data.ee_converter import get_region_as_df
 import ee
+import pandas as pd
 from typing import Callable
+
+# All climate data columns.
+CLIMATE_COLUMNS = ['precipitation', 'temperature', 'radiation']
+
+
+def get_monthly_climate_data_as_pdf(start_date: ee.Date, end_date: ee.Date,
+                                    geoms: list[ee.Geometry], scale: int) \
+        -> pd.DataFrame:
+    ''' Returns Pandas DataFrame that combines all climate data. '''
+    # Get monthly climate data as ee.ImageCollection.
+    climate_monthly = get_monthly_climate_data(start_date, end_date, geoms)
+
+    # Convert the data to pandas DataFrame.
+    all_polygons_pdfs = []
+    for i in range(len(geoms)):
+        pdf = get_region_as_df(
+            climate_monthly, geoms[i], scale, CLIMATE_COLUMNS)
+        pdf["polygon_id"] = i + 1
+        all_polygons_pdfs.append(pdf)
+
+    return pd.concat(all_polygons_pdfs)
 
 
 def get_monthly_climate_data(start_date: ee.Date, end_date: ee.Date,
-                             geometries: list[ee.Geometry]):
+                             geometries: list[ee.Geometry]) \
+        -> ee.ImageCollection:
     '''
     Returns ImageCollection that combines all climate data.
 
@@ -42,7 +66,7 @@ def make_monthly_composite(ic: ee.ImageCollection, aggregator: Callable,
 
     Common aggregators can be mean, sum, max, etc.
     '''
-    n_months = end_date.difference(start_date, 'month').subtract(1)
+    n_months = end_date.difference(start_date, 'month').round().subtract(1)
     months = ee.List.sequence(0, n_months) \
                     .map(lambda n: start_date.advance(n, 'month'))
 

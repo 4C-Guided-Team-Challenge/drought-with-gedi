@@ -1,5 +1,28 @@
+'''
+Methods for converting Earth Engine data structures to other formats (Pandas,
+GeoPandas, shapely, etc.) and back.
+'''
 import ee
+import numpy as np
 import pandas as pd
+import shapely
+
+
+def gdf_to_ee_polygon(gdf_polygon: shapely.Polygon):
+    ''' Helper to convert GeoPandas geometry to Earth Engine geometry. '''
+    x, y = gdf_polygon.exterior.coords.xy
+    coords = np.dstack((x, y)).tolist()
+    return ee.Geometry.Polygon(coords)
+
+
+def get_region_as_df(ic: ee.ImageCollection, region: ee.Geometry, scale: int,
+                     bands: list[str]):
+    '''
+    Gets Earth Engine data for a specific region and resolution, and
+    transforms it to pandas.DataFrame.
+    '''
+    ee_region_data = ic.getRegion(region, scale=5000).getInfo()
+    return ee_array_to_df(ee_region_data, bands)
 
 
 def ee_array_to_df(arr, list_of_bands):
@@ -27,13 +50,3 @@ def ee_array_to_df(arr, list_of_bands):
         .sort_values(by='datetime')
 
     return df
-
-
-def get_region_as_df(ic: ee.ImageCollection, region: ee.Geometry, scale: int,
-                     bands: list[str]):
-    '''
-    Gets Earth Engine data for a specific region and resolution, and
-    transforms it to pandas.DataFrame.
-    '''
-    ee_region_data = ic.getRegion(region, scale=5000).getInfo()
-    return ee_array_to_df(ee_region_data, bands)
