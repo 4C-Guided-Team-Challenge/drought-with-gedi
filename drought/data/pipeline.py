@@ -28,6 +28,21 @@ def get_ee_polygons():
     return [gdf_to_ee_polygon(polygon) for polygon in gdf.geometry]
 
 
+def generate_GEDI_monthly_data():
+    # Read GEDI data from Sherwood.
+    gedi_csv = pd.read_csv(
+        "/maps-priv/maps/ys611/drought-with-gedi/processed_data.csv")
+
+    # Calculate monthly means for each polygon.
+    monthly_means = gedi_csv.groupby(['month', 'year', 'polygon_id']) \
+        .mean(numeric_only=True) \
+        .reset_index()[["pai", "month", "year", "polygon_id"]]
+
+    # Save to csv file.
+    monthly_means.to_csv(
+        "../../data/interim/gedi_PAI_monthly_mean_per_polygon_4-2019_to_6-2022.csv")
+
+
 def execute():
     ''' Executes our entire data pipeline. '''
     ee.Initialize()
