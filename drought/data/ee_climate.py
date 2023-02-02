@@ -41,7 +41,7 @@ def make_monthly_composite(ic: ee.ImageCollection, aggregator: Callable,
 
     Common aggregators can be mean, sum, max, etc.
     '''
-    n_months = end_date.difference(start_date, 'month').subtract(1)
+    n_months = end_date.difference(start_date, 'month').round().subtract(1)
     months = ee.List.sequence(0, n_months) \
                     .map(lambda n: start_date.advance(n, 'month'))
 
