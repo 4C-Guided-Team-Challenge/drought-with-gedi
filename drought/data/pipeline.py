@@ -16,6 +16,11 @@ END_DATE = '2023-01-01'
 # Raster resolution.
 SCALE = 5000
 
+# File names for intermediate CSV data.
+GEDI_MONTHLY_MEANS_CSV = "../../data/interim/gedi_PAI_monthly_mean_per_polygon_4-2019_to_6-2022.csv"
+CLIMATE_MONTHLY_MEANS_CSV = "../../data/interim/climate_r_p_t_monthly_mean_per_polygon_1-2019_to_12-2022.csv"
+CLIMATE_MONTHLY_AGG_MEANS_CSV = "../../data/interim/climate_r_p_t_aggregate_monthly_mean_per_polygon_1-2019_to_12-2022.csv"
+
 
 def get_gpd_polygons():
     ''' Returns a list of GTC Regions of Interest, as geopandas geometries. '''
@@ -29,6 +34,7 @@ def get_ee_polygons():
 
 
 def generate_GEDI_monthly_data():
+    ''' Generates monthly GEDI data and saves it to a CSV file.'''
     # Read GEDI data from Sherwood.
     gedi_csv = pd.read_csv(
         "/maps-priv/maps/ys611/drought-with-gedi/processed_data.csv")
@@ -39,12 +45,11 @@ def generate_GEDI_monthly_data():
         .reset_index()[["pai", "month", "year", "polygon_id"]]
 
     # Save to csv file.
-    monthly_means.to_csv(
-        "../../data/interim/gedi_PAI_monthly_mean_per_polygon_4-2019_to_6-2022.csv")
+    monthly_means.to_csv(GEDI_MONTHLY_MEANS_CSV)
 
 
-def execute():
-    ''' Executes our entire data pipeline. '''
+def generate_climate_monthly_data():
+    ''' Generates monthly climate data and saves it to a CSV file.'''
     ee.Initialize()
 
     # Dates of interest.
@@ -63,8 +68,7 @@ def execute():
         .mean(numeric_only=True).reset_index()
 
     # Save monthly means to a csv file.
-    monthly_mean.to_csv(
-        "../../data/interim/climate_r_p_t_monthly_mean_per_polygon_1-2019_to_12-2022.csv")
+    monthly_mean.to_csv(CLIMATE_MONTHLY_MEANS_CSV)
 
     # Calculate aggregate monthly means for across all the years.
     total_monthly_mean = climate_pdf.groupby(['month', 'polygon_id']) \
@@ -72,5 +76,26 @@ def execute():
         .drop(columns=['year'])
 
     # Save aggregate monthly means to a csv file.
-    total_monthly_mean.to_csv(
-        "../../data/interim/climate_r_p_t_aggregate_monthly_mean_per_polygon_1-2019_to_12-2022.csv")
+    total_monthly_mean.to_csv(CLIMATE_MONTHLY_AGG_MEANS_CSV)
+
+
+def get_monthly_means_per_polygon():
+    ''' Combines all monthly data sources into one DataFrame. '''
+    climate_monthly = pd.read_csv(CLIMATE_MONTHLY_MEANS_CSV, index_col=0)
+    gedi_monthly = pd.read_csv(GEDI_MONTHLY_MEANS_CSV, index_col=0)
+
+    # Join data sets.
+    climate_indexed = climate_monthly.set_index(
+        ['month', 'year', 'polygon_id'])
+    gedi_indexed = gedi_monthly.set_index(['month', 'year', 'polygon_id'])
+    monthly_data = gedi_indexed.join(climate_indexed).reset_index()
+    return monthly_data
+
+
+def execute():
+    ''' Executes our entire data pipeline. '''
+    ee.Initialize()
+
+    generate_climate_monthly_data()
+    generate_GEDI_monthly_data()
+    return get_monthly_means_per_polygon()
