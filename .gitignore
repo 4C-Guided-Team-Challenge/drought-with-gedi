@@ -1,5 +1,7 @@
 # Other files to ignore
 processed_data.csv
+no_of_shots.csv
+/processed_data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
