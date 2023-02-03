@@ -53,7 +53,7 @@ def generate_GEDI_monthly_data():
 
     # Save to csv file.
     monthly_median.to_csv(
-        "../../data/interim/gedi_PAI_monthly_meadian_per_polygon_4-2019_to_6-2022.csv")
+        "../../data/interim/gedi_PAI_monthly_median_per_polygon_4-2019_to_6-2022.csv")
 
     # Calculate aggregate monthly means across all the years.
     total_monthly_mean = aggregate_monthly_per_polygon_across_years(
