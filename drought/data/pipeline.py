@@ -1,6 +1,7 @@
 ''' Module that contains our entire data pipeline. '''
-from drought.data.ee_climate import get_monthly_climate_data_as_pdf
-from drought.data.ee_converter import gdf_to_ee_polygon, get_region_as_df
+from drought.data.ee_climate import get_monthly_climate_data_as_pdf, CLIMATE_COLUMNS
+from drought.data.ee_converter import gdf_to_ee_polygon
+from drought.data.aggregator import *
 import ee
 import geopandas as gpd
 import pandas as pd
@@ -34,13 +35,36 @@ def generate_GEDI_monthly_data():
         "/maps-priv/maps/ys611/drought-with-gedi/processed_data.csv")
 
     # Calculate monthly means for each polygon.
-    monthly_means = gedi_csv.groupby(['month', 'year', 'polygon_id']) \
-        .mean(numeric_only=True) \
-        .reset_index()[["pai", "month", "year", "polygon_id"]]
+    monthly_means = aggregate_monthly_per_polygon(
+        gedi_csv, lambda x: x.mean(numeric_only=True), ['pai'])
 
     # Save to csv file.
     monthly_means.to_csv(
         "../../data/interim/gedi_PAI_monthly_mean_per_polygon_4-2019_to_6-2022.csv")
+
+    # Calculate monthly means for each polygon.
+    monthly_median = aggregate_monthly_per_polygon(
+        gedi_csv, lambda x: x.median(numeric_only=True), ['pai'])
+
+    # Save to csv file.
+    monthly_median.to_csv(
+        "../../data/interim/gedi_PAI_monthly_meadian_per_polygon_4-2019_to_6-2022.csv")
+
+    # Calculate aggregate monthly means across all the years.
+    total_monthly_mean = aggregate_monthly_per_polygon_across_years(
+        gedi_csv, lambda x: x.mean(numeric_only=True), ['pai'])
+
+    # Save to csv file.
+    total_monthly_mean.to_csv(
+        "../../data/interim/gedi_PAI_monthly_mean_per_polygon_across_years_4-2019_to_6-2022.csv")
+
+    # Calculate aggregate monthly means across all the years.
+    total_monthly_median = aggregate_monthly_per_polygon_across_years(
+        gedi_csv, lambda x: x.median(numeric_only=True), ['pai'])
+
+    # Save to csv file.
+    total_monthly_median.to_csv(
+        "../../data/interim/gedi_PAI_monthly_median_per_polygon_across_years_4-2019_to_6-2022.csv")
 
 
 def execute():
@@ -59,17 +83,16 @@ def execute():
         start_date, end_date, ee_geoms, SCALE)
 
     # Calculate monthly mean per polygon.
-    monthly_mean = climate_pdf.groupby(['month', 'year', 'polygon_id']) \
-        .mean(numeric_only=True).reset_index()
+    monthly_mean = aggregate_monthly_per_polygon(
+        climate_pdf, lambda x: x.median(numeric_only=True), CLIMATE_COLUMNS)
 
     # Save monthly means to a csv file.
     monthly_mean.to_csv(
         "../../data/interim/climate_r_p_t_monthly_mean_per_polygon_1-2019_to_12-2022.csv")
 
     # Calculate aggregate monthly means for across all the years.
-    total_monthly_mean = climate_pdf.groupby(['month', 'polygon_id']) \
-        .mean(numeric_only=True).reset_index() \
-        .drop(columns=['year'])
+    total_monthly_mean = aggregate_monthly_per_polygon_across_years(
+        climate_pdf, lambda x: x.median(numeric_only=True), CLIMATE_COLUMNS)
 
     # Save aggregate monthly means to a csv file.
     total_monthly_mean.to_csv(
