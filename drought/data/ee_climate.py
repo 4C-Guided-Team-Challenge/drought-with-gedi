@@ -12,7 +12,7 @@ import ee
 import pandas as pd
 
 # All climate data columns.
-CLIMATE_COLUMNS = ['precipitation', 'temperature', 'radiation']
+CLIMATE_COLUMNS = ['precipitation', 'temperature', 'radiation', 'fpar']
 
 
 def get_monthly_climate_data_as_pdf(start_date: ee.Date, end_date: ee.Date,
@@ -46,11 +46,12 @@ def get_monthly_climate_data(start_date: ee.Date, end_date: ee.Date,
     p_monthly = get_monthly_precipitation_data(start_date, end_date)
     r_monthly = get_monthly_radiation_data(start_date, end_date)
     t_monthly = get_monthly_temperature_data(start_date, end_date)
+    fpar_monthly = get_monthly_fpar_data(start_date, end_date)
 
     # Stack images together.
-    climate_stack = _stack_monthly_composites(
+    climate_stack = _stack_monthly_composites(_stack_monthly_composites(
         _stack_monthly_composites(p_monthly, r_monthly), t_monthly
-    )
+    ), fpar_monthly)
 
     # Clip image to include only regions of interest specified in geometries.
     clipped = climate_stack.map(lambda img: ee.ImageCollection(
@@ -132,6 +133,18 @@ def get_monthly_temperature_data(start_date: ee.Date, end_date: ee.Date):
     return make_monthly_composite(temperature_daily, lambda x: x.mean(),
                                   start_date, end_date)
 
+def get_monthly_fpar_data(start_date: ee.Date, end_date: ee.Date):
+    ''' Get average monthly fraction of the absorved photossynthic 
+    active radiation from MODIS dataset in percentege (0-100%). '''
+
+    fpar_8days = ee.ImageCollection('MODIS/061/MOD15A2H') \
+                            .select('Fpar_500m') \
+                            .filterDate(start_date, end_date)
+
+    # Since the dataset gives us the best pixel from a 8 days composite, 
+    # we need to average values per month to obtain monthly fpar.
+    return make_monthly_composite(fpar_8days, lambda x: x.mean(),
+                                  start_date, end_date)
 
 def _stack_monthly_composites(ic1: ee.ImageCollection, ic2: ee.ImageCollection):
     '''
