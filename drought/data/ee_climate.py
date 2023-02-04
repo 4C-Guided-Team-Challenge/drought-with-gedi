@@ -6,12 +6,36 @@ Before calling any of the methods, make sure to authenticate with earth
 engine. See: https://developers.google.com/earth-engine/guides/python_install#authentication # noqa
 for more details.
 '''
+from drought.data.ee_converter import get_region_as_df
 import ee
+import pandas as pd
 from typing import Callable
+
+# All climate data columns.
+CLIMATE_COLUMNS = ['precipitation', 'temperature', 'radiation']
+
+
+def get_monthly_climate_data_as_pdf(start_date: ee.Date, end_date: ee.Date,
+                                    geoms: list[ee.Geometry], scale: int) \
+        -> pd.DataFrame:
+    ''' Returns Pandas DataFrame that combines all climate data. '''
+    # Get monthly climate data as ee.ImageCollection.
+    climate_monthly = get_monthly_climate_data(start_date, end_date, geoms)
+
+    # Convert the data to pandas DataFrame.
+    all_polygons_pdfs = []
+    for i in range(len(geoms)):
+        pdf = get_region_as_df(
+            climate_monthly, geoms[i], scale, CLIMATE_COLUMNS)
+        pdf["polygon_id"] = i + 1
+        all_polygons_pdfs.append(pdf)
+
+    return pd.concat(all_polygons_pdfs)
 
 
 def get_monthly_climate_data(start_date: ee.Date, end_date: ee.Date,
-                             geometries: list[ee.Geometry]):
+                             geometries: list[ee.Geometry]) \
+        -> ee.ImageCollection:
     '''
     Returns ImageCollection that combines all climate data.
 
@@ -30,7 +54,8 @@ def get_monthly_climate_data(start_date: ee.Date, end_date: ee.Date,
 
     # Clip image to include only regions of interest specified in geometries.
     clipped = climate_stack.map(lambda img: ee.ImageCollection(
-        [img.clip(geometry) for geometry in geometries]).mosaic())
+        [img.clip(geometry) for geometry in geometries]).mosaic()
+        .copyProperties(img, ['year', 'month', 'date', 'system:time_start']))
     return clipped
 
 
@@ -51,8 +76,8 @@ def make_monthly_composite(ic: ee.ImageCollection, aggregator: Callable,
                 # IMPORTANT: Add a date property to all images.
                 # We depend on this elsewhere for stacking images.
                 .set("date", date.format("YYYY-MM"))
-                .set("month", date.format("MM"))
-                .set("year", date.format("YYYY"))
+                .set("month", date.get("month"))
+                .set("year", date.get("year"))
                 .set("system:time_start", date.millis()))
 
     return ee.ImageCollection(months.map(aggregate))
@@ -92,10 +117,9 @@ def get_monthly_radiation_data(start_date: ee.Date, end_date: ee.Date):
     TODO: Consider using MCD18C2.061 if we need PAR instead of downward
     radiation and if we need 5km resolution, instead of 11km.
     '''
-    radiation_monthly = \
-        ee.ImageCollection("ECMWF/ERA5_LAND/MONTHLY") \
-          .select(['surface_net_solar_radiation'], ['radiation']) \
-          .filterDate(start_date, end_date)
+    radiation_monthly = ee.ImageCollection("ECMWF/ERA5_LAND/MONTHLY") \
+        .select(['surface_net_solar_radiation'], ['radiation']) \
+        .filterDate(start_date, end_date)
 
     radiation_monthly = make_monthly_composite(radiation_monthly,
                                                lambda x: x.mean(),
