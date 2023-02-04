@@ -1,8 +1,9 @@
 ''' Module that contains our entire data pipeline. '''
-from drought.data.ee_climate import get_monthly_climate_data
-from drought.data.ee_converter import gdf_to_ee_polygon
+from drought.data.ee_climate import get_monthly_climate_data_as_pdf
+from drought.data.ee_converter import gdf_to_ee_polygon, get_region_as_df
 import ee
 import geopandas as gpd
+import pandas as pd
 
 POLYGONS_DIR = '../../data/polygons/Amazonia_drought_gradient_polygons.shp'
 
@@ -11,6 +12,9 @@ START_DATE = '2019-01-01'
 
 # Final date of interest (exclusive).
 END_DATE = '2023-01-01'
+
+# Raster resolution.
+SCALE = 5000
 
 
 def get_gpd_polygons():
@@ -35,7 +39,23 @@ def execute():
     # Get regions of interest.
     ee_geoms = get_ee_polygons()
 
-    # Get monthly climate data.
-    climate_monthly = get_monthly_climate_data(start_date, end_date, ee_geoms)
+    # Get monthly climate data as Pandas DataFrame.
+    climate_pdf = get_monthly_climate_data_as_pdf(
+        start_date, end_date, ee_geoms, SCALE)
 
-    return climate_monthly
+    # Calculate monthly mean per polygon.
+    monthly_mean = climate_pdf.groupby(['month', 'year', 'polygon_id']) \
+        .mean(numeric_only=True).reset_index()
+
+    # Save monthly means to a csv file.
+    monthly_mean.to_csv(
+        "../../data/interim/climate_r_p_t_monthly_mean_per_polygon_1-2019_to_12-2022.csv")
+
+    # Calculate aggregate monthly means for across all the years.
+    total_monthly_mean = climate_pdf.groupby(['month', 'polygon_id']) \
+        .mean(numeric_only=True).reset_index() \
+        .drop(columns=['year'])
+
+    # Save aggregate monthly means to a csv file.
+    total_monthly_mean.to_csv(
+        "../../data/interim/climate_r_p_t_aggregate_monthly_mean_per_polygon_1-2019_to_12-2022.csv")
