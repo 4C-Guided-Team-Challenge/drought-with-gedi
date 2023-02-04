@@ -31,8 +31,8 @@ def main(
     # iterate over time
     processed_data = None
     count = 0
-    # for year in range(2019, 2023):
-    for year in range(2020, 2023):
+    for year in range(2019, 2023):
+    # for year in range(2020, 2023):
         for month in range(1, 13):
             # iterate over each polygon
             for i in range(len(shape)):
