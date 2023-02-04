@@ -115,6 +115,7 @@ def get_monthly_means_per_polygon():
     monthly_data = gedi_indexed.join(climate_indexed).reset_index()
     return monthly_data
 
+
 def get_shots_per_polygon():
     ''' Reads monthly GEDI data and outputs the number of shots by month per polygon. '''
     gedi_csv = pd.read_csv(
@@ -122,6 +123,7 @@ def get_shots_per_polygon():
     shot_distribution = aggregate_number_of_shots(gedi_csv)
 
     return shot_distribution
+
 
 def execute():
     ''' Executes our entire data pipeline. '''
