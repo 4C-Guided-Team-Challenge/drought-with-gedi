@@ -21,6 +21,7 @@ SCALE = 5000
 GEDI_MONTHLY_MEANS_CSV = "../../data/interim/gedi_PAI_monthly_mean_per_polygon_4-2019_to_6-2022.csv"
 CLIMATE_MONTHLY_MEANS_CSV = "../../data/interim/climate_r_p_t_monthly_mean_per_polygon_1-2019_to_12-2022.csv"
 CLIMATE_MONTHLY_AGG_MEANS_CSV = "../../data/interim/climate_r_p_t_aggregate_monthly_mean_per_polygon_1-2019_to_12-2022.csv"
+GEDI_NO_OF_SHOTS = '../../data/interim/number_of_gedi_shots_per__polygon.csv'
 
 
 def get_gpd_polygons():
@@ -114,6 +115,13 @@ def get_monthly_means_per_polygon():
     monthly_data = gedi_indexed.join(climate_indexed).reset_index()
     return monthly_data
 
+def get_shots_per_polygon():
+    ''' Reads monthly GEDI data and outputs the number of shots by month per polygon. '''
+    gedi_csv = pd.read_csv(
+        "/maps-priv/maps/ys611/drought-with-gedi/processed_data.csv")
+    shot_distribution = aggregate_number_of_shots(gedi_csv)
+
+    return shot_distribution
 
 def execute():
     ''' Executes our entire data pipeline. '''
