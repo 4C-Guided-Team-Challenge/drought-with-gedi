@@ -4,7 +4,11 @@ import geopandas as gpd
 from shapely.geometry import Polygon
 from drought.src.data.gedi_database import GediDatabase
 
+def test_linting():
+    pass
+
 def parse_args():
+    # random change to test linting.
     parser = argparse.ArgumentParser()
     parser.add_argument("--shape_path", default="../../data/Amazonia_drought_gradient_polygons.shp", type=str, help="path of shapefile")
     parser.add_argument("--product_level", default="level_2b", type=str, help="level of GEDI product to query")
