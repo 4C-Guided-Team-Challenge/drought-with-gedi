@@ -12,7 +12,7 @@ import ee
 import pandas as pd
 
 # All climate data columns.
-CLIMATE_COLUMNS = ['precipitation', 'temperature', 'radiation', 'fpar']
+CLIMATE_COLUMNS = ['precipitation', 'temperature', 'radiation', 'Fpar_500m']
 
 
 def get_monthly_climate_data_as_pdf(start_date: ee.Date, end_date: ee.Date,
