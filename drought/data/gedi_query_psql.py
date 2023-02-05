@@ -13,7 +13,7 @@ def parse_args():
     parser.add_argument("--csv_path", default="processed_data/", type=str, help="path to save the query result as a csv file")
     return parser.parse_args()
 
-def main(
+def gedi_query_psql(
       shape_path:str=None,
       product_level:str=None,
       fields:list=None,
@@ -69,7 +69,7 @@ def main(
 if __name__=="__main__":
     args = parse_args()
     print(args)
-    main(
+    gedi_query_psql(
         shape_path=args.shape_path,
         product_level=args.product_level,
         fields=args.fields,

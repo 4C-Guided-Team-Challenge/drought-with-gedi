@@ -1,7 +1,5 @@
 # Other files to ignore
-processed_data.csv
-no_of_shots.csv
-/processed_data
+data/interim/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -24,6 +22,7 @@ lib64/
 parts/
 sdist/
 var/
+.vscode/
 wheels/
 pip-wheel-metadata/
 share/python-wheels/
@@ -132,3 +131,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Other
+*~
