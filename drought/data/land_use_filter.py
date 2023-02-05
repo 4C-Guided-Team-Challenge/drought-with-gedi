@@ -8,13 +8,13 @@ import numpy as np
 
 LAND_USE_DIR = '../../data/land_use/brasil_coverage_2020.tif'
 
-GEDI_DATA_DIR = '/home/fnb25/processed_data.csv'
+GEDI_DATA_DIR = '../../data/gedi/gedi_queried_shots_original.csv'
 
 '''Open raster as array file and evaluate if is in right projection
               compared with GEDI data (ESPG:4326)'''
 
 
-def read_raster(directory):
+def read_raster(directory: str):
     raster = rio.open(directory)
     crs = str(raster.crs)
     if crs == 'EPSG:4326':
@@ -27,7 +27,7 @@ def read_raster(directory):
 '''Transform csv file into geopands dataframe'''
 
 
-def transform_csv_to_gpd(directory):
+def transform_csv_to_gpd(directory: str):
     pd_df = pd.read_csv(directory)
     pd_df['geometry'] = pd_df['geometry'].apply(wkt.loads)
     gpd_df = gpd.GeoDataFrame(pd_df, geometry='geometry')
@@ -41,7 +41,7 @@ def transform_csv_to_gpd(directory):
      If quality flag = 0, at least one pixel is NOT Forest or Savanna.  '''
 
 
-def filter_land_cover(directoty_csv):
+def filter_land_cover(directoty_csv: str):
     raster_data, raster_array = read_raster(LAND_USE_DIR)
     gdf_gedi = transform_csv_to_gpd(directoty_csv)
     land_quality_flag = []
@@ -54,6 +54,7 @@ def filter_land_cover(directoty_csv):
                          [1, 1, 1]]).astype(bool)
         window = raster_array[row_index - 1: row_index + 2,
                               col_index - 1: col_index + 2][mask]
+        print(index)
         if np.array_equal(window,
                           np.array([3, 3, 3, 3, 3, 3, 3, 3, 3])) is True \
             or np.array_equal(window,
