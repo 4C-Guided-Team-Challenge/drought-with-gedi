@@ -6,11 +6,11 @@ from shapely.geometry import Polygon
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--shape_path", default="Amazonia_drought_gradient_polygons/Amazonia_drought_gradient_polygons.shp", type=str, help="path of shapefile")
+    parser.add_argument("--shape_path", default="../../data/Amazonia_drought_gradient_polygons.shp", type=str, help="path of shapefile")
     parser.add_argument("--product_level", default="level_2b", type=str, help="level of GEDI product to query")
     parser.add_argument("--fields", nargs='+', type = str, help="fields to query for corresponding level of product")
     parser.add_argument("--rh_percentiles", nargs='+', type=int, help="range of percentiles to query for RH the tree height")
-    parser.add_argument("--csv_path", default="processed_data/", type=str, help="path to save the query result as a csv file")
+    parser.add_argument("--csv_path", default="../../data/interim/gedi/", type=str, help="path to save the query result as a csv file")
     return parser.parse_args()
 
 def gedi_query_psql(
