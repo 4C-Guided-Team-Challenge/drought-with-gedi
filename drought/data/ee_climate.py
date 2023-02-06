@@ -12,7 +12,7 @@ import ee
 import pandas as pd
 
 # All climate data columns.
-CLIMATE_COLUMNS = ['precipitation', 'temperature', 'radiation', 'Fpar_500m']
+CLIMATE_COLUMNS = ['precipitation', 'temperature', 'radiation', 'fpar']
 
 
 def get_monthly_climate_data_as_pdf(start_date: ee.Date, end_date: ee.Date,
@@ -139,7 +139,7 @@ def get_monthly_fpar_data(start_date: ee.Date, end_date: ee.Date):
     active radiation from MODIS dataset in percentege (0-100%). '''
 
     fpar_8days = ee.ImageCollection('MODIS/061/MOD15A2H') \
-                   .select('Fpar_500m') \
+                   .select(['Fpar_500m'], ['fpar']) \
                    .filterDate(start_date, end_date)
 
     # Since the dataset gives us the best pixel from a 8 days composite,
