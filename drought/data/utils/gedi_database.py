@@ -27,13 +27,16 @@ def gedi_sql_query(
     conditions = []
     # Temporal conditions
     if start_time is not None and end_time is not None:
-        conditions += [f"absolute_time between '{start_time}' and '{end_time}'"]
+        conditions += [
+            f"absolute_time between '{start_time}' and '{end_time}'"
+        ]
     # Spatial conditions
     if geometry is not None:
         crs = pyproj.CRS.from_user_input(crs)
         conditions += [
             "ST_Intersects(geometry, "
-            f"ST_GeomFromText('{geometry.to_wkt().values[0]}', {crs.to_epsg()}))"
+            f"ST_GeomFromText( \
+                '{geometry.to_wkt().values[0]}', {crs.to_epsg()}))"
         ]
     # Combining conditions
     condition = (
@@ -44,7 +47,8 @@ def gedi_sql_query(
 
     if not force and condition == "" and limit is None:
         raise UserWarning(
-            "Warning! This will load the entire table. To proceed set `force`=True."
+            "Warning! This will load the entire table. \
+            To proceed set `force`=True."
         )
 
     sql_query = (
@@ -84,9 +88,10 @@ class GediDatabase(object):
 
         if columns != "*":
             for column in columns:
-                if not column in self.allowed_cols[table_name]:
+                if column in self.allowed_cols[table_name] is False:
                     raise ValueError(
-                        f"`{column}` not allowed. Must be one of {self.allowed_cols[table_name]}"
+                        f"`{column}` not allowed. \
+                            Must be one of {self.allowed_cols[table_name]}"
                     )
 
         if use_geopandas or geometry is not None:
