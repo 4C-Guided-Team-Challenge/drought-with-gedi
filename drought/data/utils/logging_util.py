@@ -4,7 +4,7 @@ import os
 import sys
 from logging.handlers import TimedRotatingFileHandler
 
-from drought.src.constants import DEFAULT_FORMATTER, DEFAULT_LOG_FILE, DEFAULT_LOG_LEVEL
+from utils.constants import DEFAULT_FORMATTER, DEFAULT_LOG_FILE, DEFAULT_LOG_LEVEL
 
 
 def get_console_handler(

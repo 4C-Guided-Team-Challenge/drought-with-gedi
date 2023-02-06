@@ -3,8 +3,8 @@ import os
 import numpy as np
 import pandas as pd
 
-data_path = "/maps/forecol/data/GEDI/level2B"
-files = [f for f in os.listdir(data_path) if f.endswith(".h5")]
+DATA_PATH = "/maps/forecol/data/GEDI/level2B"
+files = [f for f in os.listdir(DATA_PATH) if f.endswith(".h5")]
 
 # NOTE the data can be initiated as follows and then append arrays when iterating over h5 files.
 # data = {
@@ -17,7 +17,7 @@ files = [f for f in os.listdir(data_path) if f.endswith(".h5")]
 
 data = dict({})
 for f in files:
-    fname = os.path.join(data_path, f)
+    fname = os.path.join(DATA_PATH, f)
     granule = h5py.File(fname, "r")
     filter = np.array(granule['BEAM0000']['l2b_quality_flag'])==1
     data["pai"] = np.array(granule['BEAM0000']['pai'])[filter]
