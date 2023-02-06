@@ -133,7 +133,8 @@ def get_monthly_temperature_data(start_date: ee.Date, end_date: ee.Date):
                                   start_date, end_date)
 
 
-def _stack_monthly_composites(ic1: ee.ImageCollection, ic2: ee.ImageCollection):
+def _stack_monthly_composites(ic1: ee.ImageCollection,
+                              ic2: ee.ImageCollection):
     '''
     Stacks image collections together, doing the inner join on 'date'
     property.
