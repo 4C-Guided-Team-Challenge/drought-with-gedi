@@ -1,7 +1,9 @@
 ''' Module that contains our entire data pipeline. '''
-from drought.data.ee_climate import get_monthly_climate_data_as_pdf, CLIMATE_COLUMNS
+from drought.data.aggregator import aggregate_monthly_per_polygon
+from drought.data.aggregator import aggregate_monthly_per_polygon_across_years
+from drought.data.ee_climate import get_monthly_climate_data_as_pdf, \
+    CLIMATE_COLUMNS
 from drought.data.ee_converter import gdf_to_ee_polygon
-from drought.data.aggregator import *
 import ee
 import geopandas as gpd
 import pandas as pd
@@ -18,9 +20,12 @@ END_DATE = '2023-01-01'
 SCALE = 5000
 
 # File names for intermediate CSV data.
-GEDI_MONTHLY_MEANS_CSV = "../../data/interim/gedi_PAI_monthly_mean_per_polygon_4-2019_to_6-2022.csv"
-CLIMATE_MONTHLY_MEANS_CSV = "../../data/interim/climate_r_p_t_monthly_mean_per_polygon_1-2019_to_12-2022.csv"
-CLIMATE_MONTHLY_AGG_MEANS_CSV = "../../data/interim/climate_r_p_t_aggregate_monthly_mean_per_polygon_1-2019_to_12-2022.csv"
+GEDI_MONTHLY_MEANS_CSV = "../../data/interim/gedi_PAI_monthly_mean_per_polygon_4-2019_to_6-2022.csv"  # noqa: E501
+GEDI_MONTHLY_MEDIANS_CSV = "../../data/interim/gedi_PAI_monthly_median_per_polygon_4-2019_to_6-2022.csv"  # noqa: E501
+GEDI_MONTHLY_AGG_MEANS_CSV = "../../data/interim/gedi_PAI_monthly_mean_per_polygon_across_years_4-2019_to_6-2022.csv"  # noqa: E501
+GEDI_MONTHLY_AGG_MEDIANS_CSV = "../../data/interim/gedi_PAI_monthly_median_per_polygon_across_years_4-2019_to_6-2022.csv"  # noqa: E501
+CLIMATE_MONTHLY_MEANS_CSV = "../../data/interim/climate_r_p_t_monthly_mean_per_polygon_1-2019_to_12-2022.csv"  # noqa: E501
+CLIMATE_MONTHLY_AGG_MEANS_CSV = "../../data/interim/climate_r_p_t_aggregate_monthly_mean_per_polygon_1-2019_to_12-2022.csv"  # noqa: E501
 GEDI_NO_OF_SHOTS = '../../data/interim/number_of_gedi_shots_per__polygon.csv'
 
 
@@ -53,24 +58,21 @@ def generate_GEDI_monthly_data():
         gedi_csv, lambda x: x.median(numeric_only=True), ['pai'])
 
     # Save to csv file.
-    monthly_median.to_csv(
-        "../../data/interim/gedi_PAI_monthly_median_per_polygon_4-2019_to_6-2022.csv")
+    monthly_median.to_csv(GEDI_MONTHLY_MEDIANS_CSV)
 
     # Calculate aggregate monthly means across all the years.
     total_monthly_mean = aggregate_monthly_per_polygon_across_years(
         gedi_csv, lambda x: x.mean(numeric_only=True), ['pai'])
 
     # Save to csv file.
-    total_monthly_mean.to_csv(
-        "../../data/interim/gedi_PAI_monthly_mean_per_polygon_across_years_4-2019_to_6-2022.csv")
+    total_monthly_mean.to_csv(GEDI_MONTHLY_AGG_MEANS_CSV)
 
     # Calculate aggregate monthly means across all the years.
     total_monthly_median = aggregate_monthly_per_polygon_across_years(
         gedi_csv, lambda x: x.median(numeric_only=True), ['pai'])
 
     # Save to csv file.
-    total_monthly_median.to_csv(
-        "../../data/interim/gedi_PAI_monthly_median_per_polygon_across_years_4-2019_to_6-2022.csv")
+    total_monthly_median.to_csv(GEDI_MONTHLY_AGG_MEDIANS_CSV)
 
 
 def generate_climate_monthly_data():
@@ -115,6 +117,7 @@ def get_monthly_means_per_polygon():
     monthly_data = gedi_indexed.join(climate_indexed).reset_index()
     return monthly_data
 
+
 def get_shots_per_polygon():
     ''' Reads monthly GEDI data and outputs the number of shots by month per polygon. '''
     gedi_csv = pd.read_csv(
@@ -122,6 +125,7 @@ def get_shots_per_polygon():
     shot_distribution = aggregate_number_of_shots(gedi_csv)
 
     return shot_distribution
+
 
 def execute():
     ''' Executes our entire data pipeline. '''
