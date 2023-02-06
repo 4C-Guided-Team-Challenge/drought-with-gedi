@@ -5,13 +5,20 @@ import rasterio as rio
 from shapely import wkt
 import pandas as pd
 import numpy as np
+import os
+import sys
 
 LAND_USE_DIR = '../../data/land_use/brasil_coverage_2020.tif'
 
 GEDI_DATA_DIR = '../../data/gedi/gedi_queried_shots_original.csv'
 
+SAVE_NEW_FILE_DIR = ('/maps/drought-with-gedi/gedi_data/gedi_land_filtered.csv')# noqa: E501,E261,W292
+
+if os.path.isfile(SAVE_NEW_FILE_DIR) is True:
+    sys.exit("File with that name already in the directory")
+
 '''Open raster as array file and evaluate if is in right projection
-              compared with GEDI data (ESPG:4326)'''
+                compared with GEDI data (ESPG:4326)'''
 
 
 def read_raster(directory: str):
@@ -21,7 +28,7 @@ def read_raster(directory: str):
         raster_array = raster.read(1)
         return raster, raster_array
     else:
-        raise ValueError("Your raster file is not in crs 'EPSG:4326'")
+        sys.exit("Your raster file is not in crs 'EPSG:4326'")
 
 
 '''Transform csv file into geopands dataframe'''
@@ -70,4 +77,4 @@ def filter_land_cover(directoty_csv: str):
 
 gedi_data_gtc = filter_land_cover(GEDI_DATA_DIR)
 
-print(gedi_data_gtc)
+gedi_data_gtc.to_csv(SAVE_NEW_FILE_DIR)
