@@ -39,7 +39,7 @@ def transform_csv_to_gpd(directory: str):
     return gpd_df
 
 
-def filter_land_cover(directoty_csv: str, save_csv: bool):
+def filter_land_cover(dir_csv: str, save_csv: bool, overwrite_file: bool):
     '''
     Input GEDI csv file to filter land cover based on a 3x3 window, with the
     recorded GEDI geolocation in the middle,and create a quality flag
@@ -48,9 +48,11 @@ def filter_land_cover(directoty_csv: str, save_csv: bool):
     If quality flag = 0, at least one pixel is NOT Forest or Savanna.
     Save the csv file in /maps/drought-with-gedi/gedi_data/ if save_csv = True
     Or return the filtered dataset if save_csv = False
+    If there is an existing file with the same name, and you want overwrite,
+    use overwrite_file = True
     '''
     raster_data, raster_array = read_raster(LAND_USE_DIR)
-    gdf_gedi = transform_csv_to_gpd(directoty_csv)
+    gdf_gedi = transform_csv_to_gpd(dir_csv)
     land_quality_flag = []
     for index, row in gdf_gedi.iterrows():
         latitude = row['geometry'].y
@@ -61,9 +63,9 @@ def filter_land_cover(directoty_csv: str, save_csv: bool):
                          [1, 1, 1]]).astype(bool)
         window = raster_array[row_index - 1: row_index + 2,
                               col_index - 1: col_index + 2][MASK]
-# MAPBIOMAS set the class 3 for forest and class 4 for savanna
-# Therefore, to be considered valid, the pixel where GEDI shot landed and all
-# neighbors must be assigned to the same class (3 or 4)
+        # MAPBIOMAS set the class 3 for forest and class 4 for savanna
+        # Therefore, to be considered valid, the pixel where GEDI shot landed
+        # and all neighbors must be assigned to the same class (3 or 4)
         if np.array_equal(window,
                           np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]))\
             or np.array_equal(window,
@@ -77,14 +79,13 @@ def filter_land_cover(directoty_csv: str, save_csv: bool):
 
     if save_csv:
         if os.path.isfile(SAVE_NEW_FILE_DIR):
-            print("File with that name already in the directory")
-            proceed = str(input("Do you want to overwrite the file?[y,n]"))
-            if proceed == 'y':
+            print("File with that name already exists in the directory")
+            if overwrite_file:
                 filtered_gdf_gedi.to_csv(SAVE_NEW_FILE_DIR)
                 print("New csv file saved")
             else:
                 print("File not saved")
 
         filtered_gdf_gedi.to_csv(SAVE_NEW_FILE_DIR)
-    elif save_csv is False:
+    else:
         return filtered_gdf_gedi
