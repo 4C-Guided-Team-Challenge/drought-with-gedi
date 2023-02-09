@@ -14,11 +14,11 @@ def parse_args():
     parser.add_argument("--year_range", nargs='+', type=int,
                         default=[2019, 2023],
                         help="the range of years [start_year, end_year) to query")  # noqa: E501
-    parser.add_argument("--product_level", default="level_2b",
-                        type=str, help="level of GEDI product to query")
-    parser.add_argument("--fields", nargs='+', type=str,
+    parser.add_argument("--product_level", type=str, default="level_2b",
+                        help="level of GEDI product to query")
+    parser.add_argument("--fields", nargs='+', type=str, default=[],
                         help="fields to query for corresponding level of product")  # noqa: E501
-    parser.add_argument("--rh_percentiles", nargs='+', type=int,
+    parser.add_argument("--rh_percentiles", nargs='+', type=int, default=[],
                         help="range of percentiles to query for RH the tree height")  # noqa: E501
     parser.add_argument("--save_path", default="data/interim/",
                         type=str, help="path to save the query result as a csv file")  # noqa: E501
@@ -26,27 +26,27 @@ def parse_args():
 
 
 def gedi_query_psql(
-    shape_path: str = None,
-    year_range: list = None,
-    product_level: str = None,
-    fields: list = None,
-    rh_percentiles: list = None,
-    save_path: str = None,
+    shape_path: str,
+    year_range: list,
+    product_level: str,
+    save_path: str,
+    fields: list = [],
+    rh_percentiles: list = [],
 ):
     """
-    The function can be used to query the GEDI shots at given level, fields and polygons. # noqa: E501
+    The function can be used to query the GEDI shots at given level, 
+    fields and polygons. 
     """
     assert product_level in ["level_4a", "level_2b"]
     shape = gpd.read_file(shape_path)
     database = GediDatabase()
 
-    # Load specified data columns for all GEDI shots within shape for 2019
+    # Load data columns for all GEDI shots of given polygons.
     QUALITY_FLAG = f"l{product_level.split('_')[1]}_quality_flag"
     columns = fields+["shot_number", "lon_lowestmode",
                       "lat_lowestmode", QUALITY_FLAG]
     # iterate over time
-    processed_data = None
-    count = 0
+    processed_data = gpd.GeoDataFrame(geometry=[])
     for year in range(year_range[0], year_range[1]):
         for month in range(1, 13):
             # iterate over each polygon
@@ -65,19 +65,24 @@ def gedi_query_psql(
                 )
                 print("timestamp", f"{year}-{month}-01", "polygon", feature.id)
 
-                filters = np.logical_and(
-                    gedi_shots_gdf[QUALITY_FLAG] == 1,
-                    gedi_shots_gdf["pai"] > 0,
-                ) if "pai" in columns else gedi_shots_gdf[QUALITY_FLAG] == 1
-                gedi_shots_gdf = gedi_shots_gdf.loc[filters]
+                # Check the quality flag of the data product. If PAI is
+                # queried, also make sure it is greater than 0.
+                if "pai" in columns:
+                    qa_check_ok = np.logical_and(
+                        gedi_shots_gdf[QUALITY_FLAG] == 1,
+                        gedi_shots_gdf["pai"] > 0,
+                    )
+                else:
+                    gedi_shots_gdf[QUALITY_FLAG] == 1
+
+                gedi_shots_gdf = gedi_shots_gdf.loc[qa_check_ok]
                 if gedi_shots_gdf.shape[0] == 0:
                     continue
                 gedi_shots_gdf["year"] = year
                 gedi_shots_gdf["month"] = month
                 gedi_shots_gdf["polygon_id"] = feature.id
                 gedi_shots_gdf["polygon_spei"] = feature.SPEI
-                processed_data = gedi_shots_gdf if count == 0 else processed_data.append(gedi_shots_gdf)  # noqa: E501
-                count += 1
+                processed_data = processed_data.append(gedi_shots_gdf)
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)
@@ -93,7 +98,7 @@ if __name__ == "__main__":
         shape_path=args.shape_path,
         year_range=args.year_range,
         product_level=args.product_level,
+        save_path=args.save_path,
         fields=args.fields,
         rh_percentiles=args.rh_percentiles,
-        save_path=args.save_path,
     )
