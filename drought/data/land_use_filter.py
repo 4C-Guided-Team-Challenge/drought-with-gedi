@@ -50,29 +50,34 @@ def filter_land_cover(dir_csv: str, save_csv: bool, overwrite_file: bool):
     Or return the filtered dataset if save_csv = False
     If there is an existing file with the same name, and you want overwrite,
     use overwrite_file = True
+    Since Polygon 1 is outside Brazil, all shots landing inside it
+    receives the quality flag = 1, but the land use was not checked
     '''
     raster_data, raster_array = read_raster(LAND_USE_DIR)
     gdf_gedi = transform_csv_to_gpd(dir_csv)
     land_quality_flag = []
     for index, row in gdf_gedi.iterrows():
-        latitude = row['geometry'].y
-        longitude = row['geometry'].x
-        row_index, col_index = raster_data.index(longitude, latitude)
-        MASK = np.array([[1, 1, 1],
-                         [1, 1, 1],
-                         [1, 1, 1]]).astype(bool)
-        window = raster_array[row_index - 1: row_index + 2,
-                              col_index - 1: col_index + 2][MASK]
-        # MAPBIOMAS set the class 3 for forest and class 4 for savanna
-        # Therefore, to be considered valid, the pixel where GEDI shot landed
-        # and all neighbors must be assigned to the same class (3 or 4)
-        if np.array_equal(window,
-                          np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]))\
-            or np.array_equal(window,
-                              np.array([4, 4, 4, 4, 4, 4, 4, 4, 4])):
+        if row['polygon_id'] == 1:
             land_quality_flag.append(1)
         else:
-            land_quality_flag.append(0)
+            latitude = row['geometry'].y
+            longitude = row['geometry'].x
+            row_index, col_index = raster_data.index(longitude, latitude)
+            MASK = np.array([[1, 1, 1],
+                             [1, 1, 1],
+                             [1, 1, 1]]).astype(bool)
+            window = raster_array[row_index - 1: row_index + 2,
+                                  col_index - 1: col_index + 2][MASK]
+            # MAPBIOMAS set the class 3 for forest and class 4 for savanna
+            # Therefore, to be considered valid, the pixel where GEDI landed
+            # and all neighbors must be assigned to the same class (3 or 4)
+            if np.array_equal(window,
+                              np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]))\
+                or np.array_equal(window,
+                                  np.array([4, 4, 4, 4, 4, 4, 4, 4, 4])):
+                land_quality_flag.append(1)
+            else:
+                land_quality_flag.append(0)
 
     gdf_gedi['land_quality_flag'] = land_quality_flag
     filtered_gdf_gedi = gdf_gedi[gdf_gedi['land_quality_flag'] == 1]
