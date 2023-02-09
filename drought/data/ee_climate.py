@@ -136,15 +136,40 @@ def get_monthly_temperature_data(start_date: ee.Date, end_date: ee.Date):
 
 def get_monthly_fpar_data(start_date: ee.Date, end_date: ee.Date):
     ''' Get average monthly fraction of the absorved photossynthic
-    active radiation from MODIS dataset in percentege (0-100%). '''
+    active radiation from MODIS dataset in percentege (0-100%).
+    '''
+
+    def mask_fpar(img: ee.Image):
+        ''' Filters the product fpar (MODIS/061/MOD15A2H) based on
+        the binary raster provided by NASA.
+        For more information about fpar quality flags refer to
+        https://lpdaac.usgs.gov/documents/624/MOD15_User_Guide_V6.pdf
+        For more information on how to use binary rasters refers to
+        https://spatialthoughts.com/2021/08/19/qa-bands-bitmasks-gee/
+        '''
+        qa = img.select(['qa_band'])
+
+        # Create masks for different parameters
+        LANDCOVERMASK = qa.bitwiseAnd(3).eq(0)  # Only land pixels
+        AEROSOLMASK = qa.bitwiseAnd(1 << 3).eq(0)  # Only low aerossol pixels
+        CLOUDMASK = qa.bitwiseAnd(1 << 5).eq(0)  # Only cloudless pixels
+        SHADOWMASK = qa.bitwiseAnd(1 << 6).eq(0)  # Only shadowless pixels
+        CIRRUSSMASK = qa.bitwiseAnd(1 << 4).eq(0)  # Only pixels without cirrus cloud # noqa: E501
+
+        return img.updateMask(LANDCOVERMASK).updateMask(AEROSOLMASK) \
+                  .updateMask(CLOUDMASK).updateMask(SHADOWMASK) \
+                  .updateMask(CIRRUSSMASK)
 
     fpar_8days = ee.ImageCollection('MODIS/061/MOD15A2H') \
-                   .select(['Fpar_500m'], ['fpar']) \
-                   .filterDate(start_date, end_date)
+                   .select(['Fpar_500m', 'FparExtra_QC'],
+                           ['fpar', 'qa_band']) \
+                   .filterDate(start_date, end_date) \
+                   .map(mask_fpar)
 
     # Since the dataset gives us the best pixel from a 8 days composite,
     # we need to average values per month to obtain monthly fpar.
-    return make_monthly_composite(fpar_8days, lambda x: x.mean(),
+    return make_monthly_composite(fpar_8days.select(['fpar']),
+                                  lambda x: x.mean(),
                                   start_date, end_date)
 
 
