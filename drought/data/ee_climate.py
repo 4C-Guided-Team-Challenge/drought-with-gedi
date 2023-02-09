@@ -8,7 +8,6 @@ for more details.
 '''
 from drought.data.ee_converter import get_region_as_df
 from drought.data.aggregator import make_monthly_composite
-from drought.data.aggregator import from_8_days_to_monthly
 import ee
 import pandas as pd
 
@@ -147,19 +146,6 @@ def get_monthly_fpar_data(start_date: ee.Date, end_date: ee.Date):
     # we need to average values per month to obtain monthly fpar.
     return make_monthly_composite(fpar_8days, lambda x: x.mean(),
                                   start_date, end_date)
-
-
-def get_monthly_evapotranspiration_data(start_date: ee.Date,
-                                        end_date: ee.Date):
-    ''' Get cummulative monthly ET and PET from MODIS dataset. '''
-
-    et_8_days = ee.ImageCollection('MODIS/006/MOD16A2') \
-        .select(['ET', 'PET']) \
-        .multiply(0.1) \
-        .filterDate(start_date, end_date)
-
-    return from_8_days_to_monthly(
-        et_8_days, lambda x: x.sum(), start_date, end_date)
 
 
 def _stack_monthly_composites(ic1: ee.ImageCollection,
