@@ -67,7 +67,7 @@ def gedi_query_psql(
 
                 filters = np.logical_and(
                     gedi_shots_gdf[QUALITY_FLAG] == 1,
-                    gedi_shots_gdf["pai"] > 0
+                    gedi_shots_gdf["pai"] > 0,
                 ) if "pai" in columns else gedi_shots_gdf[QUALITY_FLAG] == 1
                 gedi_shots_gdf = gedi_shots_gdf.loc[filters]
                 if gedi_shots_gdf.shape[0] == 0:
@@ -81,8 +81,9 @@ def gedi_query_psql(
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)
-    processed_data.to_csv(os.path.join(
-        save_path, f"gedi_shots_{product_level}.csv"))
+    processed_data.to_csv(
+        os.path.join(save_path, f"gedi_shots_{product_level}.csv")
+    )
 
 
 if __name__ == "__main__":
