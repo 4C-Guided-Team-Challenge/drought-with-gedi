@@ -13,7 +13,8 @@ import ee
 import pandas as pd
 
 # All climate data columns.
-CLIMATE_COLUMNS = ['precipitation', 'temperature', 'radiation', 'fpar']
+CLIMATE_COLUMNS = ['precipitation', 'temperature', 'radiation', 'fpar',
+                   'ET', 'PET']
 
 
 def get_monthly_climate_data_as_pdf(start_date: ee.Date, end_date: ee.Date,
@@ -48,11 +49,12 @@ def get_monthly_climate_data(start_date: ee.Date, end_date: ee.Date,
     r_monthly = get_monthly_radiation_data(start_date, end_date)
     t_monthly = get_monthly_temperature_data(start_date, end_date)
     fpar_monthly = get_monthly_fpar_data(start_date, end_date)
+    pet_monthly = get_monthly_evapotranspiration_data(start_date, end_date)
 
     # Stack images together.
-    climate_stack = _stack_monthly_composites(_stack_monthly_composites(
-        _stack_monthly_composites(p_monthly, r_monthly), t_monthly
-    ), fpar_monthly)
+    climate_stack = _stack_monthly_composites(p_monthly, r_monthly,
+                                              t_monthly, fpar_monthly,
+                                              pet_monthly)
 
     # Clip image to include only regions of interest specified in geometries.
     clipped = climate_stack.map(lambda img: ee.ImageCollection(
@@ -153,19 +155,27 @@ def get_monthly_evapotranspiration_data(start_date: ee.Date,
                                         end_date: ee.Date):
     ''' Get cummulative monthly ET and PET from MODIS dataset. '''
 
+    def scale(img):
+        '''
+        TODO: Apply quality flags. For now just scale.
+        '''
+        return (img.select(['ET', 'PET'])
+                .multiply(0.1)
+                .toFloat()
+                .copyProperties(img, ["system:time_start"]))
+
     et_8_days = ee.ImageCollection('MODIS/006/MOD16A2') \
-        .select(['ET', 'PET']) \
-        .multiply(0.1) \
+        .map(scale) \
         .filterDate(start_date, end_date)
 
     return from_8_days_to_monthly(
         et_8_days, lambda x: x.sum(), start_date, end_date)
 
 
-def _stack_monthly_composites(ic1: ee.ImageCollection,
-                              ic2: ee.ImageCollection):
+def _stack_two_monthly_composites(ic1: ee.ImageCollection,
+                                  ic2: ee.ImageCollection):
     '''
-    Stacks image collections together, doing the inner join on 'date'
+    Stacks two image collections together, doing the inner join on 'date'
     property.
     '''
 
@@ -174,3 +184,21 @@ def _stack_monthly_composites(ic1: ee.ImageCollection,
         lambda img: ee.Image.cat(img.get('primary'), img.get('secondary')))
 
     return ee.ImageCollection(stack)
+
+
+def _stack_monthly_composites(*args: ee.ImageCollection):
+    '''
+    Stacks image collections together, doing the inner join on 'date'
+    property.
+    '''
+    if len(args) == 0:
+        return
+
+    if len(args) == 1:
+        return args[0]  # Nothing to stack, return the single Image Collection
+
+    if len(args) >= 2:
+        stack = _stack_two_monthly_composites(args[0], args[1])
+        for i in range(2, len(args)):
+            stack = _stack_two_monthly_composites(stack, args[i])
+    return stack
