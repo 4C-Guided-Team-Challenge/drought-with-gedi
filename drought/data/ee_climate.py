@@ -8,7 +8,6 @@ for more details.
 '''
 from drought.data.ee_converter import get_region_as_df
 from drought.data.aggregator import make_monthly_composite
-from drought.data.aggregator import from_8_days_to_monthly
 import ee
 import pandas as pd
 
