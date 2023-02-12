@@ -2,7 +2,6 @@ import argparse
 import os
 import numpy as np
 import geopandas as gpd
-from shapely.geometry import Polygon
 from utils.gedi_database import GediDatabase
 
 
@@ -34,8 +33,8 @@ def gedi_query_psql(
     rh_percentiles: list = [],
 ):
     """
-    The function can be used to query the GEDI shots at given level, 
-    fields and polygons. 
+    The function can be used to query the GEDI shots at given level,
+    fields and polygons.
     """
     assert product_level in ["level_4a", "level_2b"]
     shape = gpd.read_file(shape_path)
@@ -45,44 +44,54 @@ def gedi_query_psql(
     QUALITY_FLAG = f"l{product_level.split('_')[1]}_quality_flag"
     columns = fields+["shot_number", "lon_lowestmode",
                       "lat_lowestmode", QUALITY_FLAG]
+
     # iterate over time
     processed_data = gpd.GeoDataFrame(geometry=[])
-    for year in range(year_range[0], year_range[1]):
-        for month in range(1, 13):
-            # iterate over each polygon
-            for i in range(len(shape)):
-                feature = shape.loc[i]
-                gedi_shots_gdf = database.query(
-                    table_name=product_level,
-                    columns=columns,
-                    geometry=gpd.GeoDataFrame(
-                        geometry=[feature.geometry]).geometry,
-                    crs=shape.crs,
-                    start_time=f"{year}-{month}-01",
-                    end_time=f"{year}-{month+1}-01" if month != 12 else f"{year+1}-01-01",  # noqa: E501
-                    # Get a GeoDataFrame instead of pandas DataFrame
-                    use_geopandas=True,
+    year_range = range(year_range[0], year_range[1])
+    month_range = range(1, 13)
+
+    for year, month in zip(year_range, month_range):
+        start_time = f"{year}-{month}-01"
+        if month == 12:
+            # end of year
+            end_time = f"{year+1}-01-01"
+        else:
+            end_time = f"{year}-{month+1}-01"
+
+        # iterate over each polygon
+        for i in range(len(shape)):
+            feature = shape.loc[i]
+            gedi_shots_gdf = database.query(
+                table_name=product_level,
+                columns=columns,
+                geometry=gpd.GeoDataFrame(
+                    geometry=[feature.geometry]).geometry,
+                crs=shape.crs,
+                start_time=start_time,
+                end_time=end_time,
+                # Get a GeoDataFrame instead of pandas DataFrame
+                use_geopandas=True,
+            )
+            print("timestamp", f"{year}-{month}-01", "polygon", feature.id)
+
+            # Check the quality flag of the data product. If PAI is
+            # queried, also make sure it is greater than 0.
+            if "pai" in columns:
+                qa_check_ok = np.logical_and(
+                    gedi_shots_gdf[QUALITY_FLAG] == 1,
+                    gedi_shots_gdf["pai"] > 0,
                 )
-                print("timestamp", f"{year}-{month}-01", "polygon", feature.id)
+            else:
+                gedi_shots_gdf[QUALITY_FLAG] == 1
 
-                # Check the quality flag of the data product. If PAI is
-                # queried, also make sure it is greater than 0.
-                if "pai" in columns:
-                    qa_check_ok = np.logical_and(
-                        gedi_shots_gdf[QUALITY_FLAG] == 1,
-                        gedi_shots_gdf["pai"] > 0,
-                    )
-                else:
-                    gedi_shots_gdf[QUALITY_FLAG] == 1
-
-                gedi_shots_gdf = gedi_shots_gdf.loc[qa_check_ok]
-                if gedi_shots_gdf.shape[0] == 0:
-                    continue
-                gedi_shots_gdf["year"] = year
-                gedi_shots_gdf["month"] = month
-                gedi_shots_gdf["polygon_id"] = feature.id
-                gedi_shots_gdf["polygon_spei"] = feature.SPEI
-                processed_data = processed_data.append(gedi_shots_gdf)
+            gedi_shots_gdf = gedi_shots_gdf.loc[qa_check_ok]
+            if gedi_shots_gdf.shape[0] == 0:
+                continue
+            gedi_shots_gdf["year"] = year
+            gedi_shots_gdf["month"] = month
+            gedi_shots_gdf["polygon_id"] = feature.id
+            gedi_shots_gdf["polygon_spei"] = feature.SPEI
+            processed_data = processed_data.append(gedi_shots_gdf)
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)

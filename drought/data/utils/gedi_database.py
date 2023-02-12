@@ -1,9 +1,6 @@
-import logging
-
 import geopandas as gpd
 import pandas as pd
 import pyproj
-import sqlalchemy as db
 from sqlalchemy import create_engine, inspect
 
 from utils.constants import DB_CONFIG, WGS84

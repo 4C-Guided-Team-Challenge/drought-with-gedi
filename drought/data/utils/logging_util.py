@@ -4,7 +4,8 @@ import os
 import sys
 from logging.handlers import TimedRotatingFileHandler
 
-from utils.constants import DEFAULT_FORMATTER, DEFAULT_LOG_FILE, DEFAULT_LOG_LEVEL
+from utils.constants import DEFAULT_FORMATTER, DEFAULT_LOG_FILE, \
+    DEFAULT_LOG_LEVEL
 
 
 def get_console_handler(
@@ -57,7 +58,8 @@ def get_logger(
     logger.addHandler(get_console_handler(**handler_kwargs))
     logger.addHandler(get_timed_file_handler(**handler_kwargs))
 
-    # with this pattern, it's rarely necessary to propagate the error up to parent
+    # with this pattern, it's rarely necessary to propagate the error up to
+    # parent
     logger.propagate = propagate
 
     return logger

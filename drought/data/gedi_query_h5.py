@@ -6,8 +6,8 @@ import pandas as pd
 DATA_PATH = "/maps/forecol/data/GEDI/level2B"
 h5_files = [f for f in os.listdir(DATA_PATH) if f.endswith(".h5")]
 """
-NOTE the data can be initiated as follows and then append arrays 
-when iterating over h5 files. 
+NOTE the data can be initiated as follows and then append arrays
+when iterating over h5 files.
 """
 # data = {
 #     "pai": np.array([]),
