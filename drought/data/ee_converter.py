@@ -46,7 +46,7 @@ def ee_array_to_df(arr, list_of_bands):
     df['month'] = pd.DatetimeIndex(df['datetime']).month
 
     # Keep the columns of interest.
-    df = df[['time', 'datetime', 'month', 'year',  *list_of_bands]] \
-        .sort_values(by='datetime')
+    df = df[['time', 'datetime', 'month', 'year', 'longitude', 'latitude',
+             *list_of_bands]].sort_values(by='datetime')
 
     return df

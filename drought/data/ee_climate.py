@@ -7,6 +7,8 @@ engine. See: https://developers.google.com/earth-engine/guides/python_install#au
 for more details.
 '''
 from drought.data.ee_converter import get_region_as_df
+from drought.data.aggregator import from_cummulative_8_days_to_daily
+from drought.data.aggregator import from_daily_to_cummulative_monthly
 from drought.data.aggregator import make_monthly_composite
 import ee
 import pandas as pd
@@ -167,8 +169,12 @@ def get_monthly_evapotranspiration_data(start_date: ee.Date,
         .map(scale) \
         .filterDate(start_date, end_date)
 
-    return from_8_days_to_monthly(
-        et_8_days, lambda x: x.sum(), start_date, end_date)
+    # Calculate daily mean.
+    et_daily = from_cummulative_8_days_to_daily(et_8_days,
+                                                start_date, end_date)
+
+    # Add up daily means to monthly, interpolating missing data.
+    return from_daily_to_cummulative_monthly(et_daily, start_date, end_date)
 
 
 def _stack_two_monthly_composites(ic1: ee.ImageCollection,

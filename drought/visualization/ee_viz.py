@@ -44,7 +44,8 @@ def viz_all_polygons(img: ee.Image, bands: list[str],
 def viz_single_polygon(img: ee.Image, polygon_index: int,  bands: list[str],
                        palette: cm.Box = cm.palettes.inferno_r,
                        scale: int = 5000,
-                       map: geemap.Map = None) -> geemap.Map:
+                       map: geemap.Map = None,
+                       layer_names: list[str] = None) -> geemap.Map:
     '''
     Plots image on a map clipped to a specified polygon.
 
@@ -59,12 +60,15 @@ def viz_single_polygon(img: ee.Image, polygon_index: int,  bands: list[str],
         map = geemap.Map(center=(polygon.centroid.y, polygon.centroid.x),
                          zoom=9)
 
+    i = 0
     for band in bands:
         band_min = img_stats['min'][band]
         band_max = img_stats['max'][band]
         band_vis = {'bands': band, 'palette': palette,
                     'min': band_min, 'max': band_max}
-        map.addLayer(img.clip(region), band_vis, band)
-        map.add_colorbar(band_vis, label=band, layer_name=band)
+        layer_name = band if layer_names is None else layer_names[i]
+        map.addLayer(img.clip(region), band_vis, layer_name)
+        map.add_colorbar(band_vis, label=layer_name, layer_name=layer_name)
+        i += 1
 
     return map
