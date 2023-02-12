@@ -71,9 +71,9 @@ def filter_land_cover(dir_csv: str, save_csv: bool, overwrite_file: bool):
             # MAPBIOMAS set the class 3 for forest and class 4 for savanna
             # Therefore, to be considered valid, the pixel where GEDI landed
             # and all neighbors must be assigned to the same class (3 or 4)
-            if np.array_equal(window,
-                              np.array([3, 3, 3, 3, 3, 3, 3, 3, 3]))\
-                or np.array_equal(window,
+            if np.array_equal(window,  # check if all pixels are class forest (3) # noqa: E501
+                              np.array([3, 3, 3, 3, 3, 3, 3, 3, 3])) \
+                or np.array_equal(window,  # check if all pixels are class savanna (4) # noqa: E501
                                   np.array([4, 4, 4, 4, 4, 4, 4, 4, 4])):
                 land_quality_flag.append(1)
             else:

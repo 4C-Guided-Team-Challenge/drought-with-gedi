@@ -152,13 +152,13 @@ def get_monthly_fpar_data(start_date: ee.Date, end_date: ee.Date):
         # Create masks for different parameters
         LANDCOVERMASK = qa.bitwiseAnd(3).eq(0)  # Only land pixels
         AEROSOLMASK = qa.bitwiseAnd(1 << 3).eq(0)  # Only low aerossol pixels
+        CIRRUSMASK = qa.bitwiseAnd(1 << 4).eq(0)  # Only pixels without cirrus cloud # noqa: E501
         CLOUDMASK = qa.bitwiseAnd(1 << 5).eq(0)  # Only cloudless pixels
         SHADOWMASK = qa.bitwiseAnd(1 << 6).eq(0)  # Only shadowless pixels
-        CIRRUSSMASK = qa.bitwiseAnd(1 << 4).eq(0)  # Only pixels without cirrus cloud # noqa: E501
 
         return img.updateMask(LANDCOVERMASK).updateMask(AEROSOLMASK) \
                   .updateMask(CLOUDMASK).updateMask(SHADOWMASK) \
-                  .updateMask(CIRRUSSMASK)
+                  .updateMask(CIRRUSMASK)
 
     fpar_8days = ee.ImageCollection('MODIS/061/MOD15A2H') \
                    .select(['Fpar_500m', 'FparExtra_QC'],
