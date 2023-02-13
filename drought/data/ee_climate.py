@@ -157,8 +157,8 @@ def get_monthly_fpar_data(start_date: ee.Date, end_date: ee.Date):
         SHADOWMASK = qa.bitwiseAnd(1 << 6).eq(0)  # Only shadowless pixels
 
         return img.updateMask(LANDCOVERMASK).updateMask(AEROSOLMASK) \
-                  .updateMask(CLOUDMASK).updateMask(SHADOWMASK) \
-                  .updateMask(CIRRUSMASK)
+                  .updateMask(CIRRUSMASK).updateMask(CLOUDMASK) \
+                  .updateMask(SHADOWMASK)
 
     fpar_8days = ee.ImageCollection('MODIS/061/MOD15A2H') \
                    .select(['Fpar_500m', 'FparExtra_QC'],
