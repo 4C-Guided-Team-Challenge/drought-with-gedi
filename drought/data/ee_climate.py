@@ -178,7 +178,7 @@ def get_monthly_fpar_data(start_date: ee.Date, end_date: ee.Date):
 
 
 def get_monthly_evapotranspiration_data(start_date: ee.Date,
-                                        end_date: ee.Date, mask: bool):
+                                        end_date: ee.Date):
     ''' Get cummulative monthly ET and PET from MODIS dataset. '''
 
     def scale_and_mask(img):
@@ -199,12 +199,11 @@ def get_monthly_evapotranspiration_data(start_date: ee.Date,
         LANDMASK = qa.bitwiseAnd(1 << 1).eq(0)  # Only terra pixels
         CLOUD_MASK = qa.bitwiseAnd(3 << 3).eq(0)  # Cloud free
 
-        if mask:
-            img = img.updateMask(OVERALL_QUALITY_MASK) \
-                .updateMask(LANDMASK) \
-                .updateMask(CLOUD_MASK)
+        masked = img.updateMask(OVERALL_QUALITY_MASK) \
+            .updateMask(LANDMASK) \
+            .updateMask(CLOUD_MASK)
 
-        return (img.select(['ET', 'PET'])
+        return (masked.select(['ET', 'PET'])
                 .multiply(0.1)
                 .toFloat()
                 .copyProperties(img, ["system:time_start"]))
