@@ -12,7 +12,7 @@ import ee
 import pandas as pd
 
 # All climate data columns.
-CLIMATE_COLUMNS = ['precipitation', 'temperature', 'radiation']
+CLIMATE_COLUMNS = ['precipitation', 'temperature', 'radiation', 'fpar']
 
 
 def get_monthly_climate_data_as_pdf(start_date: ee.Date, end_date: ee.Date,
@@ -46,11 +46,12 @@ def get_monthly_climate_data(start_date: ee.Date, end_date: ee.Date,
     p_monthly = get_monthly_precipitation_data(start_date, end_date)
     r_monthly = get_monthly_radiation_data(start_date, end_date)
     t_monthly = get_monthly_temperature_data(start_date, end_date)
+    fpar_monthly = get_monthly_fpar_data(start_date, end_date)
 
     # Stack images together.
-    climate_stack = _stack_monthly_composites(
+    climate_stack = _stack_monthly_composites(_stack_monthly_composites(
         _stack_monthly_composites(p_monthly, r_monthly), t_monthly
-    )
+    ), fpar_monthly)
 
     # Clip image to include only regions of interest specified in geometries.
     clipped = climate_stack.map(lambda img: ee.ImageCollection(
@@ -130,6 +131,45 @@ def get_monthly_temperature_data(start_date: ee.Date, end_date: ee.Date):
                           .filterDate(start_date, end_date)
 
     return make_monthly_composite(temperature_daily, lambda x: x.mean(),
+                                  start_date, end_date)
+
+
+def get_monthly_fpar_data(start_date: ee.Date, end_date: ee.Date):
+    ''' Get average monthly fraction of the absorved photossynthic
+    active radiation from MODIS dataset in percentege (0-100%).
+    '''
+
+    def mask_fpar(img: ee.Image):
+        ''' Filters the product fpar (MODIS/061/MOD15A2H) based on
+        the binary raster provided by NASA.
+        For more information about fpar quality flags refer to
+        https://lpdaac.usgs.gov/documents/624/MOD15_User_Guide_V6.pdf
+        For more information on how to use binary rasters refers to
+        https://spatialthoughts.com/2021/08/19/qa-bands-bitmasks-gee/
+        '''
+        qa = img.select(['qa_band'])
+
+        # Create masks for different parameters
+        LANDCOVERMASK = qa.bitwiseAnd(3).eq(0)  # Only land pixels
+        AEROSOLMASK = qa.bitwiseAnd(1 << 3).eq(0)  # Only low aerossol pixels
+        CIRRUSMASK = qa.bitwiseAnd(1 << 4).eq(0)  # Only pixels without cirrus cloud # noqa: E501
+        CLOUDMASK = qa.bitwiseAnd(1 << 5).eq(0)  # Only cloudless pixels
+        SHADOWMASK = qa.bitwiseAnd(1 << 6).eq(0)  # Only shadowless pixels
+
+        return img.updateMask(LANDCOVERMASK).updateMask(AEROSOLMASK) \
+                  .updateMask(CIRRUSMASK).updateMask(CLOUDMASK) \
+                  .updateMask(SHADOWMASK)
+
+    fpar_8days = ee.ImageCollection('MODIS/061/MOD15A2H') \
+                   .select(['Fpar_500m', 'FparExtra_QC'],
+                           ['fpar', 'qa_band']) \
+                   .filterDate(start_date, end_date) \
+                   .map(mask_fpar)
+
+    # Since the dataset gives us the best pixel from a 8 days composite,
+    # we need to average values per month to obtain monthly fpar.
+    return make_monthly_composite(fpar_8days.select(['fpar']),
+                                  lambda x: x.mean(),
                                   start_date, end_date)
 
 
