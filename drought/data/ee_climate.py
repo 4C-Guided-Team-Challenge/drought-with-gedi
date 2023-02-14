@@ -178,27 +178,46 @@ def get_monthly_fpar_data(start_date: ee.Date, end_date: ee.Date):
 
 
 def get_monthly_evapotranspiration_data(start_date: ee.Date,
-                                        end_date: ee.Date):
+                                        end_date: ee.Date, mask: bool):
     ''' Get cummulative monthly ET and PET from MODIS dataset. '''
 
-    def scale(img):
+    def scale_and_mask(img):
         '''
-        TODO: Apply quality flags. For now just scale.
+        Filters and scales ET and PET data.
+
+        Filters the product (MODIS/006/MOD16A2) based on
+        the binary raster provided by NASA.
+        For more information about the quality flags refer to
+        https://lpdaac.usgs.gov/documents/494/MOD16_User_Guide_V6.pdf.
+
+        ET / PET are scaled by a factor of 0.1 as described in the userguide.
         '''
+        qa = img.select(['ET_QC'])
+
+        # Create masks for different parameters
+        OVERALL_QUALITY_MASK = qa.bitwiseAnd(1).eq(0)  # Only overall good
+        LANDMASK = qa.bitwiseAnd(1 << 1).eq(0)  # Only terra pixels
+        CLOUD_MASK = qa.bitwiseAnd(3 << 3).eq(0)  # Cloud free
+
+        if mask:
+            img = img.updateMask(OVERALL_QUALITY_MASK) \
+                .updateMask(LANDMASK) \
+                .updateMask(CLOUD_MASK)
+
         return (img.select(['ET', 'PET'])
                 .multiply(0.1)
                 .toFloat()
                 .copyProperties(img, ["system:time_start"]))
 
     et_8_days = ee.ImageCollection('MODIS/006/MOD16A2') \
-        .map(scale) \
+        .map(scale_and_mask) \
         .filterDate(start_date, end_date)
 
     # Calculate daily mean.
     et_daily = from_cummulative_8_days_to_daily(et_8_days,
                                                 start_date, end_date)
 
-    # Add up daily means to monthly, interpolating missing data.
+    # Add up daily means to monthly, temporaly interpolating missing data.
     return from_daily_to_cummulative_monthly(et_daily, start_date, end_date)
 
 

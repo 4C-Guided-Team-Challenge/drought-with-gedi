@@ -47,8 +47,7 @@ def viz_single_polygon(img: ee.Image, polygon_index: int,  bands: list[str],
                        band_names: list[str] = None,
                        palette: cm.Box = cm.palettes.inferno_r,
                        scale: int = 5000,
-                       map: geemap.Map = None,
-                       layer_names: list[str] = None) -> geemap.Map:
+                       map: geemap.Map = None) -> geemap.Map:
     '''
     Plots image on a map clipped to a specified polygon.
 
