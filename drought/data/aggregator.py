@@ -49,5 +49,4 @@ def aggregate_number_of_shots(df: pd.DataFrame) -> pd.DataFrame:
     ''' Gets number of shots by month and polygon. '''
     return df.groupby(['year', 'month', 'polygon_id']) \
         .count().reset_index() \
-        .rename(columns={'pai': 'number'}) \
-            [['year', 'month', 'polygon_id', 'number']]
+        .rename(columns={'pai': 'number'})[['year', 'month', 'polygon_id', 'number']]  # noqa: E501
