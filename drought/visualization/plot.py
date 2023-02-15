@@ -50,4 +50,4 @@ def barplot_per_polygon(data: pd.DataFrame, x, y, ylabel, title,
         subplot.set_title(f"Polygon {polygon_id}", fontsize=20)
         subplot.set_ylabel(ylabel)
 
-    return fig
+    return fig, ax
