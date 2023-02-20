@@ -116,3 +116,10 @@ def aggregate_monthly_per_polygon_across_years(df: pd.DataFrame,
     return aggregator(df.groupby(['month', 'polygon_id'])) \
         .reset_index() \
         .drop(columns=['year'])[['month', 'polygon_id',  *columns]]
+
+
+def aggregate_number_of_shots(df: pd.DataFrame) -> pd.DataFrame:
+    ''' Gets number of shots by month and polygon. '''
+    return df.groupby(['year', 'month', 'polygon_id']) \
+        .count().reset_index() \
+        .rename(columns={'pai': 'number'})[['year', 'month', 'polygon_id', 'number']]  # noqa: E501
