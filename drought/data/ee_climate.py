@@ -7,12 +7,15 @@ engine. See: https://developers.google.com/earth-engine/guides/python_install#au
 for more details.
 '''
 from drought.data.ee_converter import get_region_as_df
+from drought.data.aggregator import from_cummulative_8_days_to_daily
+from drought.data.aggregator import from_daily_to_cummulative_monthly
 from drought.data.aggregator import make_monthly_composite
 import ee
 import pandas as pd
 
 # All climate data columns.
-CLIMATE_COLUMNS = ['precipitation', 'temperature', 'radiation', 'fpar']
+CLIMATE_COLUMNS = ['precipitation', 'temperature', 'radiation', 'fpar',
+                   'ET', 'PET']
 
 
 def get_monthly_climate_data_as_pdf(start_date: ee.Date, end_date: ee.Date,
@@ -47,11 +50,12 @@ def get_monthly_climate_data(start_date: ee.Date, end_date: ee.Date,
     r_monthly = get_monthly_radiation_data(start_date, end_date)
     t_monthly = get_monthly_temperature_data(start_date, end_date)
     fpar_monthly = get_monthly_fpar_data(start_date, end_date)
+    pet_monthly = get_monthly_evapotranspiration_data(start_date, end_date)
 
     # Stack images together.
-    climate_stack = _stack_monthly_composites(_stack_monthly_composites(
-        _stack_monthly_composites(p_monthly, r_monthly), t_monthly
-    ), fpar_monthly)
+    climate_stack = _stack_monthly_composites(p_monthly, r_monthly,
+                                              t_monthly, fpar_monthly,
+                                              pet_monthly)
 
     # Clip image to include only regions of interest specified in geometries.
     clipped = climate_stack.map(lambda img: ee.ImageCollection(
@@ -173,10 +177,51 @@ def get_monthly_fpar_data(start_date: ee.Date, end_date: ee.Date):
                                   start_date, end_date)
 
 
-def _stack_monthly_composites(ic1: ee.ImageCollection,
-                              ic2: ee.ImageCollection):
+def get_monthly_evapotranspiration_data(start_date: ee.Date,
+                                        end_date: ee.Date):
+    ''' Get cummulative monthly ET and PET from MODIS dataset. '''
+
+    def scale_and_mask(img):
+        '''
+        Filters and scales ET and PET data.
+
+        Filters the product (MODIS/006/MOD16A2) based on
+        the binary raster provided by NASA.
+        For more information about the quality flags refer to
+        https://lpdaac.usgs.gov/documents/494/MOD16_User_Guide_V6.pdf.
+
+        ET / PET are scaled by a factor of 0.1 as described in the userguide.
+        '''
+        qa = img.select(['ET_QC'])
+
+        # Create masks for different parameters
+        OVERALL_QUALITY_MASK = qa.bitwiseAnd(1).eq(0)  # Only overall good
+        CLOUD_MASK = qa.bitwiseAnd(3 << 3).eq(0)  # Cloud free
+
+        masked = img.updateMask(OVERALL_QUALITY_MASK) \
+            .updateMask(CLOUD_MASK)
+
+        return (masked.select(['ET', 'PET'])
+                .multiply(0.1)
+                .toFloat()
+                .copyProperties(img, ["system:time_start"]))
+
+    et_8_days = ee.ImageCollection('MODIS/006/MOD16A2') \
+        .map(scale_and_mask) \
+        .filterDate(start_date, end_date)
+
+    # Calculate daily mean.
+    et_daily = from_cummulative_8_days_to_daily(et_8_days,
+                                                start_date, end_date)
+
+    # Add up daily means to monthly, temporaly interpolating missing data.
+    return from_daily_to_cummulative_monthly(et_daily, start_date, end_date)
+
+
+def _stack_two_monthly_composites(ic1: ee.ImageCollection,
+                                  ic2: ee.ImageCollection):
     '''
-    Stacks image collections together, doing the inner join on 'date'
+    Stacks two image collections together, doing the inner join on 'date'
     property.
     '''
 
@@ -185,3 +230,21 @@ def _stack_monthly_composites(ic1: ee.ImageCollection,
         lambda img: ee.Image.cat(img.get('primary'), img.get('secondary')))
 
     return ee.ImageCollection(stack)
+
+
+def _stack_monthly_composites(*args: ee.ImageCollection):
+    '''
+    Stacks image collections together, doing the inner join on 'date'
+    property.
+    '''
+    if len(args) == 0:
+        return
+
+    if len(args) == 1:
+        return args[0]  # Nothing to stack, return the single Image Collection
+
+    if len(args) >= 2:
+        stack = _stack_two_monthly_composites(args[0], args[1])
+        for i in range(2, len(args)):
+            stack = _stack_two_monthly_composites(stack, args[i])
+    return stack
