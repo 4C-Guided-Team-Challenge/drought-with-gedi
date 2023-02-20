@@ -196,11 +196,9 @@ def get_monthly_evapotranspiration_data(start_date: ee.Date,
 
         # Create masks for different parameters
         OVERALL_QUALITY_MASK = qa.bitwiseAnd(1).eq(0)  # Only overall good
-        LANDMASK = qa.bitwiseAnd(1 << 1).eq(0)  # Only terra pixels
         CLOUD_MASK = qa.bitwiseAnd(3 << 3).eq(0)  # Cloud free
 
         masked = img.updateMask(OVERALL_QUALITY_MASK) \
-            .updateMask(LANDMASK) \
             .updateMask(CLOUD_MASK)
 
         return (masked.select(['ET', 'PET'])
