@@ -7,12 +7,12 @@ import geopandas as gpd
 
 def rasterise_polygon(r: int, df: pd.DataFrame, shape: gpd.GeoDataFrame,
                       polygon: int):
-    ''' 
-    Generates a r x r grid (as a 2D list) and then 
+    '''
+    Generates a r x r grid (as a 2D list) and then
     assigns every footprint to the appropriate cell.
 
-    df should contain GEDI footprints, shape the polygons of interest, 
-    and polygon the desired polygon_id. 
+    df should contain GEDI footprints, shape the polygons of interest,
+    and polygon the desired polygon_id.
 
     Returns both the grid AND a list of polygons representing
     each grid cell.
@@ -69,11 +69,11 @@ def grid_cells(r: int, shape: gpd.GeoDataFrame, polygon: int):
 
 
 def plot_raster(r: int, grid: list, cells: list, var: str, method: Callable):
-    ''' 
-    Generates plot of quantity var when passed grid and cells, 
-    the outputs of rasterise_polygon. 
+    '''
+    Generates plot of quantity var when passed grid and cells,
+    the outputs of rasterise_polygon.
 
-    Make sure to provide the full method, for example, pd.DataFrame.mean. 
+    Make sure to provide the full method, for example, pd.DataFrame.mean.
     '''
     means = []
 
