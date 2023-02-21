@@ -29,17 +29,22 @@ def make_monthly_composite(ic: ee.ImageCollection, aggregator: Callable,
 
 
 def aggregate_monthly_per_polygon(df: pd.DataFrame, aggregator: Callable,
-                                  columns: list[str]) -> pd.DataFrame:
+                                  columns: list[str],
+                                  groupby: list[str] =
+                                  ['month', 'year', 'polygon_id'],
+                                  ) -> pd.DataFrame:
     ''' Calculate monthly aggregation for each year-month for each polygon. '''
-    return aggregator(df.groupby(['month', 'year', 'polygon_id'])) \
-        .reset_index()[['month', 'year', 'polygon_id',  *columns]]
+    return aggregator(df.groupby(groupby)) \
+        .reset_index()[[*groupby,  *columns]]
 
 
 def aggregate_monthly_per_polygon_across_years(df: pd.DataFrame,
                                                aggregator: Callable,
-                                               columns: list[str]) \
-        -> pd.DataFrame:
+                                               columns: list[str],
+                                               groupby: list[str] =
+                                               ['month', 'polygon_id'],
+                                               ) -> pd.DataFrame:
     ''' Calculate monthly aggregation for each polygon across all years. '''
-    return aggregator(df.groupby(['month', 'polygon_id'])) \
+    return aggregator(df.groupby(groupby)) \
         .reset_index() \
-        .drop(columns=['year'])[['month', 'polygon_id',  *columns]]
+        .drop(columns=['year'])[[*groupby,  *columns]]
