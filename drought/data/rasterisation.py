@@ -1,9 +1,8 @@
-from drought.data.pipeline import *
-from sklearn.cluster import KMeans
 from math import floor
 from shapely import Polygon
 from typing import Callable
-import pickle
+import pandas as pd
+import geopandas as gpd
 
 
 def rasterise_polygon(r: int, df: pd.DataFrame, shape: gpd.GeoDataFrame,
