@@ -44,7 +44,7 @@ for i in range(1, 9):
     ])
     res = seasonal_decompose(time_series['pai'], period=6)
     res.plot()
-    plt.savefig(os.path.join(SAVE_DIR, f"polygon{i}_monthly_means_pai.png"))
+    # plt.savefig(os.path.join(SAVE_DIR, f"polygon{i}_monthly_means_pai.png"))
 
 # %%
 plt.plot(time_stamp, time_series['pai'])

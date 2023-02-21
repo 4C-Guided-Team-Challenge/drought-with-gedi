@@ -1,6 +1,6 @@
 # Other files to ignore
 data/interim/
-reports/figures/seasonality
+# reports/figures/seasonality
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
