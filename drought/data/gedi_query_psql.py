@@ -82,7 +82,7 @@ def gedi_query_psql(
                     gedi_shots_gdf["pai"] > 0,
                 )
             else:
-                gedi_shots_gdf[QUALITY_FLAG] == 1
+                qa_check_ok = gedi_shots_gdf[QUALITY_FLAG] == 1
 
             gedi_shots_gdf = gedi_shots_gdf.loc[qa_check_ok]
             if gedi_shots_gdf.shape[0] == 0:

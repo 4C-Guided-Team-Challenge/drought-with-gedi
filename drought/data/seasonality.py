@@ -22,7 +22,9 @@ monthly_means = aggregate_monthly_per_polygon(
     gedi_csv, lambda x: x.mean(numeric_only=True), ['pai'],
     groupby=['polygon_id', 'year', 'month'])
 
-# TODO test the median values later and add other fields to test
+# TODO test different statistics, mean, median, variance etc.
+# TODO test other fields, relative height, density etc.
+# TODO refine the granularity of the queried data
 # monthly_medians = aggregate_monthly_per_polygon(
 #     gedi_csv, lambda x: x.median(numeric_only=True), ['pai']
 # )
@@ -42,22 +44,8 @@ for i in range(1, 9):
     time_stamp = np.array([
         f"{y}-{m}" for y, m in zip(time_series['year'], time_series['month'])
     ])
-    res = seasonal_decompose(time_series['pai'], period=6)
+    # res = seasonal_decompose(time_series['pai'], period=6)
+    # TODO run STL analysis without specifying period (using pd index)
+    res = STL(time_series['pai'], period=3).fit()
     res.plot()
     # plt.savefig(os.path.join(SAVE_DIR, f"polygon{i}_monthly_means_pai.png"))
-
-# %%
-plt.plot(time_stamp, time_series['pai'])
-
-# %%
-res = seasonal_decompose(time_series['pai'], period=6)
-res.plot()
-
-#
-# filter out the no data month
-
-# seasonality analysis with two different functions
-
-# plot and adapt the parameters
-
-# %%
