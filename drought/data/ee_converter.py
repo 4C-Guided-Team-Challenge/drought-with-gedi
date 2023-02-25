@@ -6,6 +6,7 @@ import ee
 import numpy as np
 import pandas as pd
 import shapely
+import geopandas as gpd
 
 
 def gdf_to_ee_polygon(gdf_polygon: shapely.Polygon):
@@ -13,6 +14,19 @@ def gdf_to_ee_polygon(gdf_polygon: shapely.Polygon):
     x, y = gdf_polygon.exterior.coords.xy
     coords = np.dstack((x, y)).tolist()
     return ee.Geometry.Polygon(coords)
+
+
+def ee_points_converter(points: pd.Series) -> pd.Series:
+    ''' Helper to convert Pandas series with lat, long tuples
+    to a pd.Series of EE points. '''
+    return ee.Geometry.Point(points)
+
+
+def gdf_to_ee_points(gdf_df: gpd.GeoDataFrame):
+    ''' Helper to convert GeoPandas points to a list of EE points. '''
+    list_ee_points = [ee.Geometry.Point(x, y) for x, y
+                      in zip(gdf_df.geometry.x, gdf_df.geometry.y)]
+    return list_ee_points
 
 
 def get_region_as_df(ic: ee.ImageCollection, region: ee.Geometry, scale: int,
