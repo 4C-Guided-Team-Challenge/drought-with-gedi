@@ -26,19 +26,16 @@ def create_ee_points_series(df: pd.DataFrame):
 # %%
 
 
-ee_list_coords = ee.List(list(zip(df['lon_lowestmode'].iloc[0:10],
-                                  df['lat_lowestmode'].iloc[0:10])))
+ee_list_coords = ee.List(list(zip(df['lon_lowestmode'].iloc[0:1000000],
+                                  df['lat_lowestmode'].iloc[0:1000000])))
 
 ee_point = ee_list_coords.map(lambda row: ee.Feature(ee.Geometry.Point(row)))
 
 fc = ee.FeatureCollection(ee_point)
 
-
 collection = ee.ImageCollection('MODIS/061/MOD15A2H') \
                   .filterDate('2019-01-01', '2019-10-01') \
                   .mean()
-
-sample_pure = collection.sampleRegions(fc)
 
 n = 3
 
@@ -46,36 +43,21 @@ weights = [[1] * n] * n
 
 window = kernel = ee.Kernel.fixed(n, n, weights)
 
-reduced_array = collection.reduceNeighborhood(reducer=ee.Reducer.sum(),
+scale = collection.projection().nominalScale()
+
+reduced_array = collection.reduceNeighborhood(reducer=ee.Reducer.median(),
                                               kernel=window)
 
-neighborhood_array = collection.neighborhoodToArray(window)
+sample = reduced_array.sampleRegions(fc, scale=scale)
 
-teste = reduced_array.sampleRegions(fc)
+sample_pure = collection.sampleRegions(fc, scale=scale)
 
-sample_pure = collection.sampleRegions(fc)
-
-values = teste.aggregate_array('Fpar_500m_sum')
+values = sample.aggregate_array('Fpar_500m_median')
 
 values2 = sample_pure.aggregate_array('Fpar_500m')
 
+print(values.getInfo())
 
-def extract_value(list):
-    value = ee.Number(list)
-    return value
-
-# %%
-
-
-point = ee_point.get(0)
-
-neighborhood_dict = neighborhood_array.sample(point,scale=collection.projection().nominalScale()).first().getInfo() # noqa
-
-# %%
-
-teste = np.array(neighborhood_dict['properties']['FparStdDev_500m']).flatten()
-
-bands_modis = collection.bandNames().getInfo()
 
 # %%
 
