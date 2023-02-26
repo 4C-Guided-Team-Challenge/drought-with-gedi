@@ -1,3 +1,4 @@
+#%%
 '''Module that filters GEDI shots based on MAPBIOMAS land use raster file'''
 
 import geopandas as gpd
@@ -29,14 +30,45 @@ def read_raster(directory: str):
         raise Warning("Your raster file is not in crs 'EPSG:4326'")
 
 
-def transform_csv_to_gpd(directory: str):
-    '''
-    Transform csv file into geopandas dataframe
-    '''
-    pd_df = pd.read_csv(directory)
-    pd_df['geometry'] = pd_df['geometry'].apply(wkt.loads)
-    gpd_df = gpd.GeoDataFrame(pd_df, geometry='geometry')
-    return gpd_df
+def return_index_col(coords: tuple) -> np.ndarray:
+    """
+    Return the row and column from a raster based on a lat and long
+    of a point stored in a tuple.
+    """
+    row_index, column_index = raster_data.index(coords[0], coords[1])
+    row_col_array = np.array([row_index, column_index])
+    return row_col_array
+
+
+def retrieve_window_array(idx: np.ndarray,
+                          raster: np.ndarray,
+                          window_size: int) -> np.ndarray:
+    """
+    Retrieves a window from a raster centered on the row and column idx.
+    """
+    window = raster[idx[0] - (window_size//2): idx[0] + (window_size//2 + 1),
+                    idx[1] - (window_size//2): idx[1] + (window_size//2 + 1)]
+    return window.flatten()
+
+
+def land_use_check(window: np.ndarray) -> bool:
+    """
+    Check the values from the extracted window to assure that the GEDI shot and
+    all the neighbors are Forest, Savanna or are in Polygon 1. The
+    values are based on the land and use map provided by MAPBIOMAS(2021)
+    Polygon 1 is outside Brazil. Therefore, all windows will have the value 0
+    """
+    poly1_check = np.all(window == 0)
+    forest_check = np.all(window == 3)
+    savanna_check = np.all(window == 4)
+    land_flag = poly1_check or forest_check or savanna_check
+    return land_flag
+
+
+
+
+
+
 
 
 def filter_land_cover(dir_csv: str, save_csv: bool, overwrite_file: bool):
@@ -94,3 +126,38 @@ def filter_land_cover(dir_csv: str, save_csv: bool, overwrite_file: bool):
         filtered_gdf_gedi.to_csv(SAVE_NEW_FILE_DIR)
     else:
         return filtered_gdf_gedi
+#%%
+
+df = pd.read_feather('/home/fnb25/gedi.feather').set_index('index')
+raster_data, raster_array = read_raster(LAND_USE_DIR)
+
+coords = pd.Series(list(zip(df['lon_lowestmode'],
+                            df['lat_lowestmode'])))
+
+def return_index_col(coord):
+    row_index, column_index = raster_data.index(coord[0],coord[1])
+    ziped = np.array([row_index,column_index])
+    return ziped
+
+indexes = coords.apply(lambda row: return_index_col(row))
+
+def retrieve_array(idx, raster, window):    
+    window = raster[idx[0] - (window//2) : idx[0] + (window//2 + 1),
+                    idx[1] - (window//2) : idx[1] + (window//2 + 1)]
+    return window.flatten()
+
+values = indexes.apply(lambda row: retrieve_array(row, raster_array, 3))
+
+
+def land_use_check(row):
+     poly1_check = np.all(row == 0)
+     forest_check = np.all(row == 3)
+     savanna_check = np.all(row == 4)
+     result = poly1_check or forest_check or savanna_check
+     return result
+
+land_quality = values.apply(lambda row: land_use_check(row))
+
+filtered_df = df[land_quality.values]
+
+#%%
