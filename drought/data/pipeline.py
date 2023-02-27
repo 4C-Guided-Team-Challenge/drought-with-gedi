@@ -27,7 +27,7 @@ GEDI_MONTHLY_AGG_MEANS_CSV = "../../data/interim/gedi_PAI_monthly_mean_per_polyg
 GEDI_MONTHLY_AGG_MEDIANS_CSV = "../../data/interim/gedi_PAI_monthly_median_per_polygon_across_years_4-2019_to_6-2022.csv"  # noqa: E501
 CLIMATE_MONTHLY_MEANS_CSV = "../../data/interim/climate_r_p_t_monthly_mean_per_polygon_1-2019_to_12-2022.csv"  # noqa: E501
 CLIMATE_MONTHLY_AGG_MEANS_CSV = "../../data/interim/climate_r_p_t_aggregate_monthly_mean_per_polygon_1-2019_to_12-2022.csv"  # noqa: E501
-GEDI_FOOTPRINTS = "/maps-priv/maps/drought-with-gedi/gedi_data/gedi_queried_shots_original.csv"  # noqa: E501
+GEDI_FOOTPRINTS = "/maps-priv/maps/drought-with-gedi/gedi_data/gedi_shots_level_2b.csv"  # noqa: E501
 
 
 def get_gpd_polygons():
@@ -117,6 +117,10 @@ def get_monthly_means_per_polygon():
     gedi_indexed = gedi_monthly.set_index(['month', 'year', 'polygon_id'])
     monthly_data = gedi_indexed.join(climate_indexed).reset_index()
     return monthly_data
+
+
+def get_gedi_footprints():
+    return pd.read_csv(GEDI_FOOTPRINTS, index_col=0)
 
 
 def get_shots_per_polygon():
