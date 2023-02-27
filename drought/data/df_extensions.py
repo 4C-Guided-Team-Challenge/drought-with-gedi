@@ -2,7 +2,7 @@ import pandas as pd
 
 
 def add_date_column(df: pd.DataFrame):
-    ''' 
+    '''
     Adds 'date' column to the DataFrame df.
 
     DataFrame must have columns 'year' and 'month' already.

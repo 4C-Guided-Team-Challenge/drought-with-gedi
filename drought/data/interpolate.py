@@ -13,13 +13,13 @@ def interpolate_using_weighted_average(df_all_polygons: pd.DataFrame,
     Outputs interpolated value on the 'value_interpolated' column of the output
     DataFrame.
 
-    Example: 
+    Example:
       value = 'pai', weight = 'number' (number of GEDI shots per month).
 
-      In this case, we want to interpolate pai value for each month, based on 
+      In this case, we want to interpolate pai value for each month, based on
       the PAI values in the previous, current and next month.
 
-      Each month PAI is weighted according to the number of GEDI shots 
+      Each month PAI is weighted according to the number of GEDI shots
       available for that month. More GEDI shots => more significant PAI value.
     '''
     all_polygons = []
@@ -56,7 +56,7 @@ def fill_timeseries_missing_data(df: pd.DataFrame, start_date: str,
                                  end_date: str, values_to_fill: dict[str, str]
                                  ) -> pd.DataFrame:
     '''
-    If DataFrame df is missing data for any months between start_date and 
+    If DataFrame df is missing data for any months between start_date and
     end_date, this method will create new rows for the missing months and fill
     missing data with values_to_fill.
 
