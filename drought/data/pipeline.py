@@ -1,7 +1,6 @@
 ''' Module that contains our entire data pipeline. '''
 from drought.data.aggregator import aggregate_monthly_per_polygon
 from drought.data.aggregator import aggregate_monthly_per_polygon_across_years
-from drought.data.aggregator import aggregate_number_of_shots
 from drought.data.ee_climate import get_monthly_climate_data_as_pdf, \
     CLIMATE_COLUMNS
 from drought.data.ee_converter import gdf_to_ee_polygon
@@ -28,6 +27,7 @@ GEDI_MONTHLY_AGG_MEDIANS_CSV = "../../data/interim/gedi_PAI_monthly_median_per_p
 CLIMATE_MONTHLY_MEANS_CSV = "../../data/interim/climate_r_p_t_monthly_mean_per_polygon_1-2019_to_12-2022.csv"  # noqa: E501
 CLIMATE_MONTHLY_AGG_MEANS_CSV = "../../data/interim/climate_r_p_t_aggregate_monthly_mean_per_polygon_1-2019_to_12-2022.csv"  # noqa: E501
 GEDI_FOOTPRINTS = "/maps-priv/maps/drought-with-gedi/gedi_data/gedi_shots_level_2b.csv"  # noqa: E501
+GEDI_FILTERED_FOOTPRINTS = "/maps/drought-with-gedi/gedi_data/gedi_shots_level_2b_land_filtered.csv"  # noqa: E501
 
 
 def get_gpd_polygons():
@@ -123,12 +123,8 @@ def get_gedi_footprints():
     return pd.read_csv(GEDI_FOOTPRINTS, index_col=0)
 
 
-def get_shots_per_polygon():
-    ''' Reads monthly GEDI data and outputs the no. of shots per polygon. '''
-    gedi_csv = pd.read_csv(GEDI_FOOTPRINTS, index_col=0)
-    shot_distribution = aggregate_number_of_shots(gedi_csv)
-
-    return shot_distribution
+def get_filtered_gedi_footprints():
+    return pd.read_csv(GEDI_FILTERED_FOOTPRINTS, index_col=0)
 
 
 def execute():
