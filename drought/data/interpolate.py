@@ -9,7 +9,7 @@ def interpolate_using_weighted_average(df_all_polygons: pd.DataFrame,
     3 month sliding window.
 
     Interpolated value is calculated as following:
-    interpolated_value_i = (value_i-1 * weight_i-1 + value_i * weight_i + value_i+1 * weight_i+1) \ (weight_i-1 + weight_i + weight_i+1)  # noqa: E501
+    interpolated_value_i = (value_i-1 * weight_i-1 + value_i * weight_i + value_i+1 * weight_i+1) \\ (weight_i-1 + weight_i + weight_i+1)  # noqa: E501
 
     Interpolated values are returned on the 'value_interpolated' column of the
     returned DataFrame.
