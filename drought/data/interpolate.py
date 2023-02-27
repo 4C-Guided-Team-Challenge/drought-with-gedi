@@ -8,10 +8,12 @@ def interpolate_using_weighted_average(df_all_polygons: pd.DataFrame,
     Interpolates values on the value column based on the weighted average of a
     3 month sliding window.
 
-    Corresponding weights are sampled from the weight column.
+    Interpolated value is calculated as following:
+    interpolated_value_i = (value_i-1 * weight_i-1 + value_i * weight_i + value_i+1 * weight_i+1) \ (weight_i-1 + weight_i + weight_i+1)  # noqa: E501
 
-    Outputs interpolated value on the 'value_interpolated' column of the output
-    DataFrame.
+    Interpolated values are returned on the 'value_interpolated' column of the
+    returned DataFrame.
+
 
     Example:
       value = 'pai', weight = 'number' (number of GEDI shots per month).
