@@ -1,4 +1,4 @@
-from math import floor
+import numpy as np
 from shapely import Polygon
 from typing import Callable
 import pandas as pd
@@ -8,79 +8,57 @@ import geopandas as gpd
 def rasterise_polygon(r: int, df: pd.DataFrame, shape: gpd.GeoDataFrame,
                       polygon: int):
     '''
-    Generates a r x r grid (as a 2D list) and then
-    assigns every footprint to the appropriate cell.
+    Generates a r x r grid and then assigns every footprint 
+    x and y coordinates within that grid.
 
     df should contain GEDI footprints, shape the polygons of interest,
     and polygon the desired polygon_id.
 
-    Returns both the grid AND a list of polygons representing
-    each grid cell.
+    Returns df with x and y columns appended indicating grid coordinates. 
     '''
     df = df[df["polygon_id"] == polygon]
     geometry = shape.geometry[polygon - 1]
 
-    grid = [[pd.DataFrame()]*r for i in range(r)]
-
     minx, miny, maxx, maxy = geometry.bounds
     stepx = (maxx - minx) / r
     stepy = (maxy - miny) / r
 
-    for i in range(len(df)):
-        footprint = df.iloc[[i]]
-        lon = footprint["lon_lowestmode"]
-        lat = footprint["lat_lowestmode"]
-        x = floor((lon - minx) / stepx)
-        y = floor((maxy - lat) / stepy)
-        grid[y][x] = pd.concat([grid[y][x], footprint])
-        if (i % 100000 == 0):
-            print(i)
+    df['x'] = ((df['lon_lowestmode'] - minx) / stepx).apply(np.floor)
+    df['y'] = ((maxy - df['lat_lowestmode']) / stepy).apply(np.floor)
 
-    cells = grid_cells(r, shape, polygon)
-
-    return grid, cells
+    return df
 
 
-def grid_cells(r: int, shape: gpd.GeoDataFrame, polygon: int):
-    ''' Encodes geospatial information for convenient plotting.'''
+def calculate_grid_geometry(df, r, shape, polygon, var):
+    '''
+        Given a Pandas.DataFrame with x and y columns, replace those with the
+        appropriate geometry column.
+    '''
     geometry = shape.geometry[polygon - 1]
 
     minx, miny, maxx, maxy = geometry.bounds
     stepx = (maxx - minx) / r
     stepy = (maxy - miny) / r
 
-    curx = minx
-    cury = maxy
+    def calc_geometry(row):
+        curx = minx + row['x'] * stepx
+        cury = maxy - row['y'] * stepy
+        return Polygon([(curx, cury), (curx + stepx, cury),
+                        (curx + stepx, cury - stepy), (curx, cury - stepy)])
 
-    cells = []
+    df['geometry'] = df.apply(calc_geometry, axis=1)
+    df = df.drop(columns=['x', 'y'])
 
-    for y in range(r):
-        for x in range(r):
-            cell = Polygon([(curx, cury), (curx + stepx, cury),
-                            (curx + stepx, cury - stepy), (curx, cury - stepy)])  # noqa: E501
-            cells.append(cell)
-            curx += stepx
-        cury -= stepy
-        curx = minx
-
-    cells = gpd.GeoDataFrame(cells, columns=["geometry"])
-
-    return cells
+    geo_df = gpd.GeoDataFrame(df, columns=["geometry", *var])
+    return geo_df
 
 
-def plot_raster(r: int, grid: list, cells: list, var: str, method: Callable):
+def plot_raster(df, r, shape, polygon, var):
     '''
-    Generates plot of quantity var when passed grid and cells,
-    the outputs of rasterise_polygon.
-
-    Make sure to provide the full method, for example, pd.DataFrame.mean.
+    Generates plot of quantity var when passed df,
+    the output of rasterise_polygon.
     '''
-    means = []
+    df = df.groupby(['x', 'y']).mean()[var].reset_index()
+    geo_df = calculate_grid_geometry(df, r, shape, polygon, [var])
 
-    for y in range(r):
-        for x in range(r):
-            means.append(method(grid[y][x][var]))
-
-    cells[var] = means
-
-    cells.plot(column=var, cmap="Greens")
+    geo_df.plot(column=var, cmap='Greens')
