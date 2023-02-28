@@ -2,6 +2,7 @@ import argparse
 import os
 import numpy as np
 import geopandas as gpd
+from datetime import date, timedelta
 from utils.gedi_database import GediDatabase
 
 
@@ -10,9 +11,12 @@ def parse_args():
     parser.add_argument("--shape_path",
                         default="data/polygons/Amazonia_drought_gradient_polygons.shp",  # noqa: E501
                         type=str, help="path of shapefile")
-    parser.add_argument("--year_range", nargs='+', type=int,
-                        default=[2019, 2023],
-                        help="the range of years [start_year, end_year) to query")  # noqa: E501
+    parser.add_argument("--start_time", type=str, default="2019-1-1",
+                        help="start date of query in the format yyyy-m-d")
+    parser.add_argument("--end_time", type=str, default="2022-12-31",
+                        help="end date of query in the format yyyy-m-d")
+    parser.add_argument("--time_delta", type=int, default=7,
+                        help="time interval to specify the query dates")
     parser.add_argument("--product_level", type=str, default="level_2b",
                         help="level of GEDI product to query")
     parser.add_argument("--fields", nargs='+', type=str, default=[],
@@ -26,7 +30,9 @@ def parse_args():
 
 def gedi_query_psql(
     shape_path: str,
-    year_range: list,
+    start_time: str,
+    end_time: str,
+    time_delta: int,
     product_level: str,
     save_path: str,
     fields: list = [],
@@ -47,17 +53,14 @@ def gedi_query_psql(
 
     # iterate over time
     processed_data = gpd.GeoDataFrame(geometry=[])
-    year_range = range(year_range[0], year_range[1])
-    month_range = range(1, 13)
+    # year_range = range(year_range[0], year_range[1])
+    # month_range = range(1, 13)
+    start_time = start_time.split('-')
+    end_time = end_time.split('-')
+    start_time = date(start_time[0], start_time[1], start_time[2])
+    end_time = date(end_time[0], end_time[1], end_time[2])
 
-    for year, month in zip(year_range, month_range):
-        start_time = f"{year}-{month}-01"
-        if month == 12:
-            # end of year
-            end_time = f"{year+1}-01-01"
-        else:
-            end_time = f"{year}-{month+1}-01"
-
+    while start_time < end_time:
         # iterate over each polygon
         for i in range(len(shape)):
             feature = shape.loc[i]
@@ -67,12 +70,14 @@ def gedi_query_psql(
                 geometry=gpd.GeoDataFrame(
                     geometry=[feature.geometry]).geometry,
                 crs=shape.crs,
-                start_time=start_time,
-                end_time=end_time,
+                start_time=start_time.strftime("%Y-%m-%d"),
+                end_time=(start_time+time_delta).strftime("%Y-%m-%d"),
                 # Get a GeoDataFrame instead of pandas DataFrame
                 use_geopandas=True,
             )
-            print("timestamp", f"{year}-{month}-01", "polygon", feature.id)
+            print("timestamp", start_time.strftime(
+                "%Y-%m-%d"), "polygon", feature.id)
+            start_time += time_delta
 
             # Check the quality flag of the data product. If PAI is
             # queried, also make sure it is greater than 0.
@@ -87,6 +92,8 @@ def gedi_query_psql(
             gedi_shots_gdf = gedi_shots_gdf.loc[qa_check_ok]
             if gedi_shots_gdf.shape[0] == 0:
                 continue
+            # TODO check df group according to time index and STL requirement
+            # TODO today run query and STL according to dates
             gedi_shots_gdf["year"] = year
             gedi_shots_gdf["month"] = month
             gedi_shots_gdf["polygon_id"] = feature.id
@@ -105,7 +112,9 @@ if __name__ == "__main__":
     print(args)
     gedi_query_psql(
         shape_path=args.shape_path,
-        year_range=args.year_range,
+        start_time=args.start_time,
+        end_time=args.end_time,
+        time_delta=args.time_delta,
         product_level=args.product_level,
         save_path=args.save_path,
         fields=args.fields,
