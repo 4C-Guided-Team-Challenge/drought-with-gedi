@@ -1,6 +1,5 @@
 import numpy as np
 from shapely import Polygon
-from typing import Callable
 import pandas as pd
 import geopandas as gpd
 
@@ -8,13 +7,13 @@ import geopandas as gpd
 def rasterise_polygon(r: int, df: pd.DataFrame, shape: gpd.GeoDataFrame,
                       polygon: int):
     '''
-    Generates a r x r grid and then assigns every footprint 
+    Generates a r x r grid and then assigns every footprint
     x and y coordinates within that grid.
 
     df should contain GEDI footprints, shape the polygons of interest,
     and polygon the desired polygon_id.
 
-    Returns df with x and y columns appended indicating grid coordinates. 
+    Returns df with x and y columns appended indicating grid coordinates.
     '''
     df = df[df["polygon_id"] == polygon]
     geometry = shape.geometry[polygon - 1]
@@ -29,7 +28,8 @@ def rasterise_polygon(r: int, df: pd.DataFrame, shape: gpd.GeoDataFrame,
     return df
 
 
-def calculate_grid_geometry(df, r, shape, polygon, var):
+def calculate_grid_geometry(df: pd.DataFrame, r: int, shape: gpd.GeoDataFrame,
+                            polygon: int, var: str):
     '''
         Given a Pandas.DataFrame with x and y columns, replace those with the
         appropriate geometry column.
@@ -53,7 +53,8 @@ def calculate_grid_geometry(df, r, shape, polygon, var):
     return geo_df
 
 
-def plot_raster(df, r, shape, polygon, var):
+def plot_raster(df: pd.DataFrame, r: int, shape: gpd.GeoDataFrame,
+                polygon: int, var: str):
     '''
     Generates plot of quantity var when passed df,
     the output of rasterise_polygon.
