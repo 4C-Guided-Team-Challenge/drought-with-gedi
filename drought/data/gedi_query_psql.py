@@ -26,6 +26,9 @@ def parse_args():
                         type=str, help="path to save the query result as a csv file")  # noqa: E501
     return parser.parse_args()
 
+# TODO the monthly query is still useful to match the climate data
+# that function should also be kept
+
 
 def gedi_query_psql(
     shape_path: str,
