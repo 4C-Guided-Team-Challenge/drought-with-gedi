@@ -16,7 +16,7 @@ def gdf_to_ee_polygon(gdf_polygon: shapely.Polygon):
     return ee.Geometry.Polygon(coords)
 
 
-def ee_points_converter(points: pd.Series) -> pd.Series:
+def ee_points_converter(points: tuple) -> ee.Geometry:
     ''' Helper to convert Pandas series with lat, long tuples
     to a pd.Series of EE points. '''
     return ee.Geometry.Point(points)
