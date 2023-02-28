@@ -1,6 +1,7 @@
 import argparse
 import os
 import numpy as np
+import pandas as pd
 import geopandas as gpd
 from datetime import date, timedelta
 from utils.gedi_database import GediDatabase
@@ -21,8 +22,6 @@ def parse_args():
                         help="level of GEDI product to query")
     parser.add_argument("--fields", nargs='+', type=str, default=[],
                         help="fields to query for corresponding level of product")  # noqa: E501
-    parser.add_argument("--rh_percentiles", nargs='+', type=int, default=[],
-                        help="range of percentiles to query for RH the tree height")  # noqa: E501
     parser.add_argument("--save_path", default="data/interim/",
                         type=str, help="path to save the query result as a csv file")  # noqa: E501
     return parser.parse_args()
@@ -36,7 +35,6 @@ def gedi_query_psql(
     product_level: str,
     save_path: str,
     fields: list = [],
-    rh_percentiles: list = [],
 ):
     """
     The function can be used to query the GEDI shots at given level,
@@ -55,10 +53,11 @@ def gedi_query_psql(
     processed_data = gpd.GeoDataFrame(geometry=[])
     # year_range = range(year_range[0], year_range[1])
     # month_range = range(1, 13)
-    start_time = start_time.split('-')
-    end_time = end_time.split('-')
+    start_time = [int(i) for i in start_time.split('-')]
+    end_time = [int(i) for i in end_time.split('-')]
     start_time = date(start_time[0], start_time[1], start_time[2])
     end_time = date(end_time[0], end_time[1], end_time[2])
+    time_delta = timedelta(days=time_delta)
 
     while start_time < end_time:
         # iterate over each polygon
@@ -92,19 +91,18 @@ def gedi_query_psql(
             gedi_shots_gdf = gedi_shots_gdf.loc[qa_check_ok]
             if gedi_shots_gdf.shape[0] == 0:
                 continue
-            # TODO check df group according to time index and STL requirement
-            # TODO today run query and STL according to dates
-            gedi_shots_gdf["year"] = year
-            gedi_shots_gdf["month"] = month
+
+            gedi_shots_gdf["timestamp"] = pd.Timestamp(start_time-time_delta)
             gedi_shots_gdf["polygon_id"] = feature.id
             gedi_shots_gdf["polygon_spei"] = feature.SPEI
             processed_data = processed_data.append(gedi_shots_gdf)
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)
-    processed_data.to_csv(
-        os.path.join(save_path, f"gedi_shots_{product_level}.csv")
-    )
+    # processed_data.to_csv(
+    #     os.path.join(save_path, f"gedi_shots_{product_level}.csv")
+    # )
+    processed_data.to_csv(save_path)
 
 
 if __name__ == "__main__":
@@ -118,5 +116,4 @@ if __name__ == "__main__":
         product_level=args.product_level,
         save_path=args.save_path,
         fields=args.fields,
-        rh_percentiles=args.rh_percentiles,
     )
