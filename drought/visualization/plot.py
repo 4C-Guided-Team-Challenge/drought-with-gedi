@@ -97,7 +97,7 @@ def catplot_per_polygon(data: pd.DataFrame, x, y, hue, kind, bands, title,
         cat.fig.suptitle(f"Polygon {polygon_id}", fontsize=15)
 
 
-def plot_per_polygon(data: pd.DataFrame, title, plot_func, fig=None, ax=None, sharey=False
+def plot_per_polygon(data: pd.DataFrame, title, plot_func, fig=None, ax=None, sharey=False, twin_axis=False
                      ) -> plt.figure:
     if fig is None and ax is None:
         fig, ax = plt.subplots(4, 2, figsize=(30, 24), sharey=sharey)
@@ -112,7 +112,10 @@ def plot_per_polygon(data: pd.DataFrame, title, plot_func, fig=None, ax=None, sh
         polygon_data = data[data['polygon_id'] == polygon_id]
 
         # Plot.
-        plot_func(polygon_data, subplot)
+        if twin_axis:
+            plot_func(polygon_data, subplot.twinx())
+        else:
+            plot_func(polygon_data, subplot)
         #sns.barplot(polygon_data, x=x, y=y, color=color, ax=subplot)
         subplot.set_title(f"Polygon {polygon_id}", fontsize=20)
         # subplot.set_ylabel(ylabel)
