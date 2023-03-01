@@ -35,7 +35,7 @@ def get_region_as_df(ic: ee.ImageCollection, region: ee.Geometry, scale: int,
     Gets Earth Engine data for a specific region and resolution, and
     transforms it to pandas.DataFrame.
     '''
-    ee_region_data = ic.getRegion(region, scale=5000).getInfo()
+    ee_region_data = ic.getRegion(region, scale=scale).getInfo()
     return ee_array_to_df(ee_region_data, bands)
 
 
