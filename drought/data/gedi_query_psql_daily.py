@@ -62,9 +62,10 @@ def gedi_query_psql(
     end_time = date(end_time[0], end_time[1], end_time[2])
     time_delta = timedelta(days=time_delta)
 
-    while start_time < end_time:
-        # iterate over each polygon
-        for i in range(len(shape)):
+    # iterate over each polygon
+    for i in range(len(shape)):
+        start_time_query = start_time
+        while start_time_query < end_time:
             feature = shape.loc[i]
             gedi_shots_gdf = database.query(
                 table_name=product_level,
@@ -72,14 +73,14 @@ def gedi_query_psql(
                 geometry=gpd.GeoDataFrame(
                     geometry=[feature.geometry]).geometry,
                 crs=shape.crs,
-                start_time=start_time.strftime("%Y-%m-%d"),
-                end_time=(start_time+time_delta).strftime("%Y-%m-%d"),
+                start_time=start_time_query.strftime("%Y-%m-%d"),
+                end_time=(start_time_query+time_delta).strftime("%Y-%m-%d"),
                 # Get a GeoDataFrame instead of pandas DataFrame
                 use_geopandas=True,
             )
-            print("timestamp", start_time.strftime(
+            print("timestamp", start_time_query.strftime(
                 "%Y-%m-%d"), "polygon", feature.id)
-            start_time += time_delta
+            start_time_query += time_delta
 
             # Check the quality flag of the data product. If PAI is
             # queried, also make sure it is greater than 0.
@@ -95,13 +96,14 @@ def gedi_query_psql(
             if gedi_shots_gdf.shape[0] == 0:
                 continue
 
-            gedi_shots_gdf["timestamp"] = pd.Timestamp(start_time-time_delta)
+            gedi_shots_gdf["timestamp"] = pd.Timestamp(
+                start_time_query-time_delta)
             gedi_shots_gdf["polygon_id"] = feature.id
             gedi_shots_gdf["polygon_spei"] = feature.SPEI
             processed_data = processed_data.append(gedi_shots_gdf)
 
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
+    # if not os.path.exists(save_path):
+    #     os.makedirs(save_path)
     # processed_data.to_csv(
     #     os.path.join(save_path, f"gedi_shots_{product_level}.csv")
     # )
