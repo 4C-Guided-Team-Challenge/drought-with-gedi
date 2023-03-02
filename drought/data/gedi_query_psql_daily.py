@@ -102,12 +102,11 @@ def gedi_query_psql(
             gedi_shots_gdf["polygon_spei"] = feature.SPEI
             processed_data = processed_data.append(gedi_shots_gdf)
 
-    # if not os.path.exists(save_path):
-    #     os.makedirs(save_path)
-    # processed_data.to_csv(
-    #     os.path.join(save_path, f"gedi_shots_{product_level}.csv")
-    # )
-    processed_data.to_csv(save_path)
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    processed_data.to_csv(
+        os.path.join(save_path, f"gedi_shots_{product_level}_7d_pai.csv")
+    )
 
 
 if __name__ == "__main__":
