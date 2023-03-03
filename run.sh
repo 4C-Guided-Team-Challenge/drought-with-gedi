@@ -5,4 +5,4 @@
 
 # python3 -m pdb query_h5.py
 
-python3 -m pdb drought/data/gedi_vertical_analysis.py
+python3 drought/data/gedi_vertical_analysis.py
