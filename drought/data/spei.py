@@ -3,18 +3,11 @@ import xarray as xr
 import rioxarray as rio # noqa
 import matplotlib.pyplot as plt
 import numpy as np
-import geopandas as gpd
 import rasterio
 
 PATH_FILE = '/maps-priv/maps/drought-with-gedi/spei_data/spei'
 
 SAVE_DIRECTORY = '/maps-priv/maps/drought-with-gedi/spei_data/'
-
-shapefile = gpd.read_file('/home/fnb25/drought-with-gedi/data/polygons/Amazonia_drought_gradient_polygons.shp')  # noqa
-
-minx, miny, maxx, maxy = shapefile.total_bounds
-
-# %%
 
 
 def create_spei_geotiff(spei_window: int,
@@ -70,19 +63,17 @@ def create_spei_geotiff(spei_window: int,
                        dtype=dtype, crs=crs, transform=transform) as dst:
 
         dst.write(extreme_drought, 1)
-        dst.write(severe_drought, 1)
-        dst.write(moderate_drought, 1)
-        dst.write(near_normal, 1)
-        dst.write(moderate_wet, 1)
-        dst.write(severe_wet, 1)
-        dst.write(extreme_wet, 1)
+        dst.write(severe_drought, 2)
+        dst.write(moderate_drought, 3)
+        dst.write(near_normal, 4)
+        dst.write(moderate_wet, 5)
+        dst.write(severe_wet, 6)
+        dst.write(extreme_wet, 7)
 
 # %%
 
 
 ds = xr.open_dataset(PATH_FILE)
-
-cropped_ds = ds.sel(lat=slice(miny-3, maxy+3), lon=slice(minx-3, maxx+3))
 
 '''for dim in ds.dims.values():
     print(dim)
