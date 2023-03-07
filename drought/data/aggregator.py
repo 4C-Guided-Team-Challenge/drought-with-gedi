@@ -118,6 +118,27 @@ def aggregate_monthly_per_polygon_across_years(df: pd.DataFrame,
         .drop(columns=['year'])[['month', 'polygon_id',  *columns]]
 
 
+def get_monthly_means_and_shot_count(df: pd.DataFrame, columns: list[str]) \
+        -> pd.DataFrame:
+    ''' Gets number of shots by month and polygon, joined by the monthly means
+    of the data. '''
+    index_columns = ['year', 'month', 'polygon_id']
+
+    # Get number of footprints shots per month per year, stored in a 'number'
+    # column.
+    shot_distribution = df.groupby(index_columns).count() \
+                          .rename(columns={'pai': 'number'})[['number']]
+
+    # Calculate means per polygon per month per year.
+    mean_monthly = df.groupby(index_columns).mean(numeric_only=True)
+
+    # Join the number of shots with data means
+    monthly = shot_distribution.join(mean_monthly).reset_index(
+    )[[*columns, *index_columns, 'number']]
+
+    return monthly
+
+
 def aggregate_number_of_shots(df: pd.DataFrame) -> pd.DataFrame:
     ''' Gets number of shots by month and polygon. '''
     return df.groupby(['year', 'month', 'polygon_id']) \
