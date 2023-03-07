@@ -35,6 +35,13 @@ def get_gpd_polygons():
     return gpd.read_file(POLYGONS_DIR)
 
 
+def get_gedi_footprints():
+    ''' Returns dataframe containing all footprints within polygons. '''
+    gedi_csv = pd.read_csv(GEDI_FOOTPRINTS, index_col=0)
+
+    return gedi_csv
+
+
 def get_ee_polygons():
     ''' Returns a list of GTC Regions of Interest, as ee geometries. '''
     gdf = get_gpd_polygons()
@@ -44,8 +51,7 @@ def get_ee_polygons():
 def generate_GEDI_monthly_data():
     ''' Generates monthly GEDI data and saves it to a CSV file.'''
     # Read GEDI data from Sherwood.
-    gedi_csv = pd.read_csv(
-        "/maps-priv/maps/ys611/drought-with-gedi/processed_data.csv")
+    gedi_csv = pd.read_csv(GEDI_FOOTPRINTS)
 
     # Calculate monthly means for each polygon.
     monthly_means = aggregate_monthly_per_polygon(
