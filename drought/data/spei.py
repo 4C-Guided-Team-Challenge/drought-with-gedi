@@ -5,6 +5,8 @@ import rasterio
 import pandas as pd
 import os
 import geopandas as gpd
+from rasterio.mask import mask
+from shapely.geometry import mapping
 
 PATH_FILE = '/maps-priv/maps/drought-with-gedi/spei_data/spei'
 
@@ -72,9 +74,7 @@ def create_spei_geotiff(spei_window: int,
 # %%
 
 
-def extract_spei_pixels() -> pd.DataFrame:
-
-    spei_months = ['1', '3', '6', '9', '12']
+def extract_spei_pixels(spei_month: str) -> pd.DataFrame:
 
     spei_strings = [(PATH_FILE + '_reduced' + i + '.tif') for i in spei_months]
 
@@ -84,5 +84,32 @@ def extract_spei_pixels() -> pd.DataFrame:
 
     polygons = gpd.read_file('/home/fnb25/drought-with-gedi/data/polygons/Amazonia_drought_gradient_polygons.shp') # noqa
 
+    for spei_month in spei_months:
+        print('lala')
+
+
+# %%
+
+polygons = gpd.read_file('/home/fnb25/drought-with-gedi/data/polygons/Amazonia_drought_gradient_polygons.shp') # noqa
+
+full_df = pd.DataFrame(columns=['extreme_drought', 'severe_drought',
+                                'moderate_drought', 'near_normal',
+                                'moderate_wet', 'severe_wet',
+                                'extreme_wet', 'polygon'])
+
+for polygon in range(polygons.geometry.shape[0]):
+    geojson = [mapping(polygons.geometry[polygon])]
+    with rasterio.open('/maps/drought-with-gedi/spei_data/spei_reduced12.tif', 'r') as dst:
+        clipped, affine = mask(dataset=dst, shapes=geojson, all_touched=True, crop=True)
+        values = clipped.reshape(7, (clipped.shape[1] * clipped.shape[2])).transpose()
+        polygon_array = np.full((values.shape[0], 1), polygon + 1)
+        complete_array = np.hstack((values, polygon_array))
+        polygon_df = pd.DataFrame(data=complete_array, columns=full_df.columns)
+        full_df = pd.concat([full_df, polygon_df], ignore_index=True)
+
+full_df.boxplot(column=['extreme_drought', 'severe_drought',
+                        'moderate_drought', 'near_normal',
+                        'moderate_wet', 'severe_wet',
+                        'extreme_wet'], by='polygon')
 
 # %%
