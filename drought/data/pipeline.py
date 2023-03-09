@@ -125,10 +125,6 @@ def get_monthly_means_per_polygon():
     return monthly_data
 
 
-def get_gedi_footprints():
-    return pd.read_csv(GEDI_FOOTPRINTS, index_col=0)
-
-
 def get_filtered_gedi_footprints():
     return pd.read_csv(GEDI_FILTERED_FOOTPRINTS, index_col=0)
 
