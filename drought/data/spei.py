@@ -7,6 +7,10 @@ import os
 import geopandas as gpd
 from rasterio.mask import mask
 from shapely.geometry import mapping
+import ee
+from drought.data.ee_converter import gdf_to_ee_polygon
+
+ee.Initialize()
 
 PATH_FILE = '/maps-priv/maps/drought-with-gedi/spei_data/spei'
 
@@ -76,40 +80,64 @@ def create_spei_geotiff(spei_window: int,
 
 def extract_spei_pixels(spei_month: str) -> pd.DataFrame:
 
-    spei_strings = [(PATH_FILE + '_reduced' + i + '.tif') for i in spei_months]
+    spei_string = PATH_FILE + '_reduced' + spei_month + '.tif'
 
-    for string, spei_month in zip(spei_strings, spei_months):
-        if os.path.exists(string) is False:
-            create_spei_geotiff(spei_month)
+    if os.path.exists(spei_string) is False:
+        create_spei_geotiff(spei_month)
 
     polygons = gpd.read_file('/home/fnb25/drought-with-gedi/data/polygons/Amazonia_drought_gradient_polygons.shp') # noqa
 
-    for spei_month in spei_months:
-        print('lala')
+    full_df = pd.DataFrame(columns=['extreme_drought', 'severe_drought',
+                                    'moderate_drought', 'near_normal',
+                                    'moderate_wet', 'severe_wet',
+                                    'extreme_wet', 'polygon'])
 
+    for polygon in range(polygons.geometry.shape[0]):
+        geojson = [mapping(polygons.geometry[polygon])]
+        with rasterio.open(spei_string, 'r') as dst:
+            clipped, affine = mask(dataset=dst,
+                                   shapes=geojson,
+                                   all_touched=True,
+                                   crop=True)
+            values = clipped.reshape(7, (clipped.shape[1] *
+                                         clipped.shape[2])).transpose()
+            polygon_array = np.full((values.shape[0], 1),
+                                    polygon + 1)
+            complete_array = np.hstack((values, polygon_array))
+            polygon_df = pd.DataFrame(data=complete_array,
+                                      columns=full_df.columns)
+            full_df = pd.concat([full_df, polygon_df], ignore_index=True)
+
+    return full_df
 
 # %%
 
 polygons = gpd.read_file('/home/fnb25/drought-with-gedi/data/polygons/Amazonia_drought_gradient_polygons.shp') # noqa
 
-full_df = pd.DataFrame(columns=['extreme_drought', 'severe_drought',
-                                'moderate_drought', 'near_normal',
-                                'moderate_wet', 'severe_wet',
-                                'extreme_wet', 'polygon'])
+ee_polygons = gdf_to_ee_polygon(polygons.geometry[1])
 
-for polygon in range(polygons.geometry.shape[0]):
-    geojson = [mapping(polygons.geometry[polygon])]
-    with rasterio.open('/maps/drought-with-gedi/spei_data/spei_reduced12.tif', 'r') as dst:
-        clipped, affine = mask(dataset=dst, shapes=geojson, all_touched=True, crop=True)
-        values = clipped.reshape(7, (clipped.shape[1] * clipped.shape[2])).transpose()
-        polygon_array = np.full((values.shape[0], 1), polygon + 1)
-        complete_array = np.hstack((values, polygon_array))
-        polygon_df = pd.DataFrame(data=complete_array, columns=full_df.columns)
-        full_df = pd.concat([full_df, polygon_df], ignore_index=True)
 
-full_df.boxplot(column=['extreme_drought', 'severe_drought',
-                        'moderate_drought', 'near_normal',
-                        'moderate_wet', 'severe_wet',
-                        'extreme_wet'], by='polygon')
+def mabiomas_mask(image):
+    mapbiomas = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2') # noqa
+    mapbiomas_2021 = mapbiomas.select('classification_2021')
+    forest_mask = mapbiomas_2021.eq(3)
+    return image.updateMask(forest_mask)
 
+
+potapov = ee.ImageCollection('users/potapovpeter/GEDI_V27').map(mabiomas_mask)
+
+mapbiomas = ee.Image('projects/mapbiomas-workspace/public/collection7/mapbiomas_collection70_integration_v2') # noqa
+
+vis = {'min':0, 'max':100, 'palette':['#fff7ec','#fee8c8','#fdd49e','#fdbb84','#fc8d59','#ef6548','#d7301f','#b30000','#7f0000']} # noqa
+# %%
+
+import geemap # noqa
+
+Map = geemap.Map()
+
+Map.addLayer(potapov, vis)
+
+Map.addLayer(ee_polygons)
+
+Map
 # %%
