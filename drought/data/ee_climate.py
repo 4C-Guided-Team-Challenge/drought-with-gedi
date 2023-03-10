@@ -19,7 +19,8 @@ CLIMATE_COLUMNS = ['precipitation', 'temperature', 'radiation', 'fpar',
 
 
 def get_monthly_climate_data_as_pdf(start_date: ee.Date, end_date: ee.Date,
-                                    geoms: list[ee.Geometry], scale: int) \
+                                    geoms: list[ee.Geometry], scale: int,
+                                    columns: list[str] = CLIMATE_COLUMNS) \
         -> pd.DataFrame:
     ''' Returns Pandas DataFrame that combines all climate data. '''
     # Get monthly climate data as ee.ImageCollection.
@@ -29,7 +30,7 @@ def get_monthly_climate_data_as_pdf(start_date: ee.Date, end_date: ee.Date,
     all_polygons_pdfs = []
     for i in range(len(geoms)):
         pdf = get_region_as_df(
-            climate_monthly, geoms[i], scale, CLIMATE_COLUMNS)
+            climate_monthly, geoms[i], scale, columns)
         pdf["polygon_id"] = i + 1
         all_polygons_pdfs.append(pdf)
 
