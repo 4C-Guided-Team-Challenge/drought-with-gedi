@@ -39,8 +39,7 @@ def gedi_query_psql(
 
     # Load data columns for all GEDI shots of given polygons.
     QUALITY_FLAG = f"l{product_level.split('_')[1]}_quality_flag"
-    columns = fields+["shot_number", "lon_lowestmode",
-                      "lat_lowestmode", QUALITY_FLAG]
+    columns = fields+["lon_lowestmode", "lat_lowestmode", QUALITY_FLAG]
 
     # iterate over time
     processed_data = gpd.GeoDataFrame(geometry=[])
@@ -88,13 +87,13 @@ def gedi_query_psql(
                 gedi_shots_gdf["year"] = year
                 gedi_shots_gdf["month"] = month
                 gedi_shots_gdf["polygon_id"] = feature.id
-                gedi_shots_gdf["polygon_spei"] = feature.SPEI
+                # gedi_shots_gdf["polygon_spei"] = feature.SPEI
                 processed_data = processed_data.append(gedi_shots_gdf)
 
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     processed_data.to_csv(
-        os.path.join(save_path, f"gedi_shots_{product_level}.csv")
+        os.path.join(save_path, f"gedi_shots_{product_level}_20230310.csv")
     )
 
 

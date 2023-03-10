@@ -1,8 +1,13 @@
 # for GEDI query
 # psql query for L2B 
-python3 drought/data/gedi_query_psql_daily.py \
-        --start_time '2019-1-1' --end_time '2022-12-31' --time_delta 7 \
-        --product_level level_2b --fields pai 
+# python3 drought/data/gedi_query_psql_daily.py \
+#         --start_time '2019-1-1' --end_time '2022-12-31' --time_delta 7 \
+#         --product_level level_2b --fields pai 
+
+python3 drought/data/gedi_query_psql_monthly.py \
+        --year_range 2019 2023 --product_level level_2b \
+        --fields pai rh100 beam_type sensitivity solar_elevation cover 
+
 
 # python3 drought/data/gedi_query_psql_daily.py \
 #         --start_time '2019-1-1' --end_time '2022-12-31' --time_delta 7 \
