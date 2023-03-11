@@ -28,6 +28,7 @@ CLIMATE_MONTHLY_MEANS_CSV = "../../data/interim/climate_r_p_t_monthly_mean_per_p
 CLIMATE_MONTHLY_AGG_MEANS_CSV = "../../data/interim/climate_r_p_t_aggregate_monthly_mean_per_polygon_1-2019_to_12-2022.csv"  # noqa: E501
 GEDI_FOOTPRINTS = "/maps-priv/maps/drought-with-gedi/gedi_data/gedi_shots_level_2b.csv"  # noqa: E501
 GEDI_FILTERED_FOOTPRINTS = "/maps/drought-with-gedi/gedi_data/gedi_shots_level_2b_land_filtered.csv"  # noqa: E501
+GEDI_EXTENDED_FOOTPRINTS = "/maps-priv/maps/drought-with-gedi/gedi_data/gedi_shots_lebel_2b_extended.csv"  # noqa: E501
 
 
 def get_gpd_polygons():
@@ -38,6 +39,13 @@ def get_gpd_polygons():
 def get_gedi_footprints():
     ''' Returns dataframe containing all footprints within polygons. '''
     gedi_csv = pd.read_csv(GEDI_FOOTPRINTS, index_col=0)
+
+    return gedi_csv
+
+
+def get_extended_gedi_footprints():
+    ''' Returns dataframe containing all footprints within polygons. '''
+    gedi_csv = pd.read_csv(GEDI_EXTENDED_FOOTPRINTS, index_col=0)
 
     return gedi_csv
 
