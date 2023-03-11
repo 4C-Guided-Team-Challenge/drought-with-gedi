@@ -1,3 +1,4 @@
+# %%
 import numpy as np
 import rasterio
 from rasterio.enums import Resampling
@@ -5,8 +6,30 @@ import geemap
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 import ee
+from shapely.geometry import mapping
+from shapely.geometry import box
+from rasterio.mask import mask
 
 ee.Initialize()
+
+# %%
+
+with rasterio.open('/home/fnb25/drought-with-gedi/data/land_use/brasil_coverage_2020.tif', 'r') as mapbiomas: # noqa
+    bbox = mapbiomas.bounds
+    bbox_geometry = box(*bbox)
+    geojson = [mapping(bbox_geometry)]
+
+with rasterio.open('/maps/drought-with-gedi/Felipe/Forest_height_2019_SAM.tif', 'r') as potapov: # noqa
+    clipped, affine = mask(dataset=potapov,
+                           shapes=geojson,
+                           crop=True)
+    meta = potapov.meta.copy()
+    meta.update({'width': clipped.shape[1],
+                 'height': clipped.shape[2],
+                 'transform': affine})
+
+with rasterio.open('/maps-priv/maps/drought-with-gedi/Felipe/clipped_raster_potapov.tif', "w", **meta) as dest: # noqa
+    dest.write(clipped.reshape(170817, 163592), 1)
 
 # %%
 
