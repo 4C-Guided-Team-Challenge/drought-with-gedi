@@ -47,7 +47,7 @@ def interpolate_using_weighted_average(df_all_polygons: pd.DataFrame,
         sum_of_weights = df[weight].rolling(window=3, center=True).sum()
 
         # Interpolated value = (sum of weighted values) / (sum of the weights)
-        interpolated_value = sum_of_weighted_values / sum_of_weights
+        interpolated_value = (sum_of_weighted_values / sum_of_weights)
 
         df[f'{value}_interpolated'] = interpolated_value
         all_polygons.append(df)
