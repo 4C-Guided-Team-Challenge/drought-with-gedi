@@ -1,3 +1,6 @@
+# interim results
+data/interim
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
