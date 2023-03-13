@@ -26,6 +26,7 @@ def parse_args():
                         type=str, help="path to save the query result as a csv file")  # noqa: E501
     return parser.parse_args()
 
+
 def gedi_query_psql(
     shape_path: str,
     start_time: str,

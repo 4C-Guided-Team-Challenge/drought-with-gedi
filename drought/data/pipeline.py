@@ -59,7 +59,13 @@ def get_ee_polygons():
 def generate_GEDI_monthly_data():
     ''' Generates monthly GEDI data and saves it to a CSV file.'''
     # Read GEDI data from Sherwood.
+<<<<<<< HEAD
+    gedi_csv = pd.read_csv(
+        "/maps-priv/maps/drought-with-gedi/gedi_data/ \
+            gedi_queried_shots_original.csv")
+=======
     gedi_csv = pd.read_csv(GEDI_FOOTPRINTS)
+>>>>>>> main
 
     # Calculate monthly means for each polygon.
     monthly_means = aggregate_monthly_per_polygon(
