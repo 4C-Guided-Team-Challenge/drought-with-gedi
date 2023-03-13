@@ -3,6 +3,7 @@ from shapely import Polygon
 import pandas as pd
 import geopandas as gpd
 from drought.data.ee_converter import gdf_to_ee_polygon
+import ee
 
 
 def rasterise_polygon(r: int, df: pd.DataFrame, shape: gpd.GeoDataFrame,
@@ -71,7 +72,7 @@ def raster_climate(df: pd.DataFrame, dataset: str, feature: str,
     '''
     Given a DataFrame consisting of a geometry column, returns requested
     climatic variable (as defined by dataset and feature) for each geometry
-    over the timeframe specified by start and end.  
+    over the timeframe specified by start and end.
     '''
     climate = []
 
@@ -108,7 +109,7 @@ def raster_climate_all_polygons(r: int, df: pd.DataFrame,
     requested gedi_var and climate_var for each cell.
 
     Note that climate_var will be the mean of the variable over the timeframe
-    from climate_start to climate_end. 
+    from climate_start to climate_end.
     '''
     master_climate = pd.DataFrame()
 
