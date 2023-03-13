@@ -2,6 +2,7 @@ import numpy as np
 from shapely import Polygon
 import pandas as pd
 import geopandas as gpd
+from drought.data.ee_converter import gdf_to_ee_polygon
 
 
 def rasterise_polygon(r: int, df: pd.DataFrame, shape: gpd.GeoDataFrame,
@@ -63,3 +64,63 @@ def plot_raster(df: pd.DataFrame, r: int, shape: gpd.GeoDataFrame,
     geo_df = calculate_grid_geometry(df, r, shape, polygon, [var])
 
     geo_df.plot(column=var, cmap='Greens')
+
+
+def raster_climate(df: pd.DataFrame, dataset: str, feature: str,
+                   start: str, end: str):
+    '''
+    Given a DataFrame consisting of a geometry column, returns requested
+    climatic variable (as defined by dataset and feature) for each geometry
+    over the timeframe specified by start and end.  
+    '''
+    climate = []
+
+    collection = ee.ImageCollection(dataset)
+
+    dSUTC = ee.Date(start, 'GMT')
+    dEUTC = ee.Date(end, 'GMT')
+    filtered = collection.filterDate(dSUTC, dEUTC.advance(1, 'day')) \
+        .select(feature)
+
+    image = filtered.mean()
+
+    for polygon in df['geometry']:
+        ee_polygon = gdf_to_ee_polygon(polygon)
+        series = image.reduceRegions(collection=ee_polygon,
+                                     reducer=ee.Reducer.mean(),
+                                     scale=500)
+
+        value = series.getInfo()['features'][0]['properties']['mean']
+
+        climate.append(value)
+
+    df[feature] = climate
+
+    return df
+
+
+def raster_climate_all_polygons(r: int, df: pd.DataFrame,
+                                shape: gpd.GeoDataFrame, gedi_var: str,
+                                climate_dataset: str, climate_var: str,
+                                climate_start: str, climate_end: str):
+    '''
+    Standalone function which will generate a rasterised DataFrame containing
+    requested gedi_var and climate_var for each cell.
+
+    Note that climate_var will be the mean of the variable over the timeframe
+    from climate_start to climate_end. 
+    '''
+    master_climate = pd.DataFrame()
+
+    for pol in range(1, 9):
+        grid = rasterise_polygon(r, df, shape, pol) \
+            .groupby(['x', 'y']).mean()[gedi_var].reset_index()
+        geo_grid = calculate_grid_geometry(grid, r, shape, pol, [gedi_var])
+
+        climate_grid = raster_climate(geo_grid, climate_dataset, climate_var,
+                                      climate_start, climate_end)
+        climate_grid['polygon_id'] = pol
+
+        master_climate = pd.concat([master_climate, climate_grid])
+
+    return master_climate
