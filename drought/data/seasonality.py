@@ -20,6 +20,7 @@ def parse_args():
                         type=int, help="period of STL function for seasonality analysis")  # noqa: E501
     parser.add_argument("--save_path", defult="reports/figures/",
                         type=str, help="path to save plots")
+    return parser.parse_args()
 
 
 def seasonality(
