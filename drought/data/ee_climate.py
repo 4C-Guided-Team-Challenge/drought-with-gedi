@@ -6,7 +6,7 @@ Before calling any of the methods, make sure to authenticate with earth
 engine. See: https://developers.google.com/earth-engine/guides/python_install#authentication # noqa
 for more details.
 '''
-from drought.data.ee_converter import get_region_as_df
+from drought.data.ee_converter import get_polygons_as_df
 from drought.data.aggregator import from_cummulative_8_days_to_daily
 from drought.data.aggregator import from_daily_to_cummulative_monthly
 from drought.data.aggregator import make_monthly_composite
@@ -25,16 +25,8 @@ def get_monthly_climate_data_as_pdf(start_date: ee.Date, end_date: ee.Date,
     ''' Returns Pandas DataFrame that combines all climate data. '''
     # Get monthly climate data as ee.ImageCollection.
     climate_monthly = get_monthly_climate_data(start_date, end_date, geoms)
-
-    # Convert the data to pandas DataFrame.
-    all_polygons_pdfs = []
-    for i in range(len(geoms)):
-        pdf = get_region_as_df(
-            climate_monthly, geoms[i], scale, columns)
-        pdf["polygon_id"] = i + 1
-        all_polygons_pdfs.append(pdf)
-
-    return pd.concat(all_polygons_pdfs)
+    return get_polygons_as_df(climate_monthly, start_date, end_date, geoms,
+                              scale, columns)
 
 
 def get_monthly_climate_data(start_date: ee.Date, end_date: ee.Date,
