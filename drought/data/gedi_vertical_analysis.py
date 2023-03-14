@@ -36,7 +36,7 @@ def vertical(
     SAVE_PATH = save_path
     data = pd.read_csv(GEDI_DATA_DIR)
 
-    data[f"pai_z_sum"] = data['pai_z'].map(
+    data['pai_z_sum'] = data['pai_z'].map(
         lambda x: vertical_stats(x, stat='sum'))
 
     stats = ['mean', 'max', 'min']

@@ -1,15 +1,13 @@
 import os
 import sys
 import argparse
+from statsmodels.tsa.seasonal import STL
+from drought.data.aggregator import aggregate_monthly_per_polygon
+import pandas as pd
+import matplotlib.pyplot as plt
+
 BASE_DIR = "/maps-priv/maps/ys611/drought-with-gedi/"  # noqa: E501
 sys.path.append(BASE_DIR)  # noqa: E501
-from statsmodels.tsa.seasonal import seasonal_decompose, STL
-from drought.data.aggregator import aggregate_monthly_per_polygon
-from drought.data.aggregator import aggregate_monthly_per_polygon_across_years
-import geopandas as gpd
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 
 
 def parse_args():
