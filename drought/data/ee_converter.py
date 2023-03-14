@@ -15,6 +15,25 @@ def gdf_to_ee_polygon(gdf_polygon: shapely.Polygon):
     return ee.Geometry.Polygon(coords)
 
 
+def get_polygons_as_df(ic: ee.ImageCollection, start_date: ee.Date,
+                       end_date: ee.Date, geoms: list[ee.Geometry], scale: int,
+                       bands: list[str]) \
+        -> pd.DataFrame:
+    '''
+    Gets Earth Engine data for all polygons, given a resolution, and
+    transforms it to pandas.DataFrame.
+    '''
+
+    # Convert the data to pandas DataFrame.
+    all_polygons_pdfs = []
+    for i in range(len(geoms)):
+        pdf = get_region_as_df(ic, geoms[i], scale, bands)
+        pdf["polygon_id"] = i + 1
+        all_polygons_pdfs.append(pdf)
+
+    return pd.concat(all_polygons_pdfs)
+
+
 def get_region_as_df(ic: ee.ImageCollection, region: ee.Geometry, scale: int,
                      bands: list[str]):
     '''
