@@ -28,15 +28,3 @@ def add_datetime_column(df: pd.DataFrame):
     df_copy['day'] = 1
     df['datetime'] = pd.to_datetime(df_copy[['month', 'day', 'year']])
     return df
-
-
-def add_datetime_column(df: pd.DataFrame):
-    '''
-    Adds 'datetime' column to the DataFrame df.
-
-    DataFrame must have columns 'year' and 'month' already.
-    '''
-    df_copy = df.copy()
-    df_copy['day'] = 1
-    df['datetime'] = pd.to_datetime(df_copy[['month', 'day', 'year']])
-    return df

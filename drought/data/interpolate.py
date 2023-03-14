@@ -1,7 +1,8 @@
 import pandas as pd
 
 
-def interpolate_using_linear(df_all_polygons: pd.DataFrame, colummns: list[str]):
+def interpolate_using_linear(df_all_polygons: pd.DataFrame,
+                             colummns: list[str]):
     all_polygons = []
     for polygon_id in range(1, 9):
         df = df_all_polygons[df_all_polygons.polygon_id == polygon_id]

@@ -69,12 +69,12 @@ def calculate_nrmse(original, seasonal, polygon_id, column):
 
 
 def get_seasonal_amplitude(original, seasonal, polygon_id, column):
-    original_polygon = original[original.polygon_id == polygon_id].set_index(
-        'datetime').sort_index()[column]
+    # original_polygon = original[original.polygon_id == polygon_id].set_index(
+    #    'datetime').sort_index()[column]
     seasonal_polygon = seasonal[seasonal.polygon_id == polygon_id].set_index(
         'datetime').sort_index()[column]
 
     absolute_amplitude = seasonal_polygon.max() - seasonal_polygon.min()
-    #relative_amplitude = absolute_amplitude / (original_polygon.quantile(0.75) - original_polygon.quantile(0.25))
+    # relative_amplitude = absolute_amplitude / (original_polygon.quantile(0.75) - original_polygon.quantile(0.25))  # noqa: E501
     relative_amplitude = absolute_amplitude / seasonal_polygon.mean()
     return absolute_amplitude, relative_amplitude
