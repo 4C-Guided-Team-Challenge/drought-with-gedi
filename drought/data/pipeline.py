@@ -28,6 +28,7 @@ CLIMATE_MONTHLY_MEANS_CSV = "../../data/interim/climate_r_p_t_monthly_mean_per_p
 CLIMATE_MONTHLY_AGG_MEANS_CSV = "../../data/interim/climate_r_p_t_aggregate_monthly_mean_per_polygon_1-2019_to_12-2022.csv"  # noqa: E501
 GEDI_FOOTPRINTS = "/maps-priv/maps/drought-with-gedi/gedi_data/gedi_shots_level_2b.csv"  # noqa: E501
 GEDI_FILTERED_FOOTPRINTS = "/maps/drought-with-gedi/gedi_data/gedi_shots_level_2b_land_filtered.csv"  # noqa: E501
+GEDI_EXTENDED_FOOTPRINTS = "/maps-priv/maps/drought-with-gedi/gedi_data/gedi_shots_lebel_2b_extended.csv"  # noqa: E501
 
 
 def get_gpd_polygons():
@@ -42,6 +43,13 @@ def get_gedi_footprints():
     return gedi_csv
 
 
+def get_extended_gedi_footprints():
+    ''' Returns dataframe containing all footprints within polygons. '''
+    gedi_csv = pd.read_csv(GEDI_EXTENDED_FOOTPRINTS, index_col=0)
+
+    return gedi_csv
+
+
 def get_ee_polygons():
     ''' Returns a list of GTC Regions of Interest, as ee geometries. '''
     gdf = get_gpd_polygons()
@@ -51,7 +59,13 @@ def get_ee_polygons():
 def generate_GEDI_monthly_data():
     ''' Generates monthly GEDI data and saves it to a CSV file.'''
     # Read GEDI data from Sherwood.
+<<<<<<< HEAD
+    gedi_csv = pd.read_csv(
+        "/maps-priv/maps/drought-with-gedi/gedi_data/ \
+            gedi_queried_shots_original.csv")
+=======
     gedi_csv = pd.read_csv(GEDI_FOOTPRINTS)
+>>>>>>> main
 
     # Calculate monthly means for each polygon.
     monthly_means = aggregate_monthly_per_polygon(
@@ -123,10 +137,6 @@ def get_monthly_means_per_polygon():
     gedi_indexed = gedi_monthly.set_index(['month', 'year', 'polygon_id'])
     monthly_data = gedi_indexed.join(climate_indexed).reset_index()
     return monthly_data
-
-
-def get_gedi_footprints():
-    return pd.read_csv(GEDI_FOOTPRINTS, index_col=0)
 
 
 def get_filtered_gedi_footprints():

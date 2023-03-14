@@ -102,19 +102,27 @@ def from_cummulative_8_days_to_daily(ic: ee.ImageCollection,
 
 
 def aggregate_monthly_per_polygon(df: pd.DataFrame, aggregator: Callable,
-                                  columns: list[str]) -> pd.DataFrame:
+                                  columns: list[str],
+                                  groupby: list[str] =
+                                  ['month', 'year', 'polygon_id'],
+                                  ) -> pd.DataFrame:
     ''' Calculate monthly aggregation for each year-month for each polygon. '''
-    return aggregator(df.groupby(['month', 'year', 'polygon_id'])) \
-        .reset_index()[['month', 'year', 'polygon_id',  *columns]]
+    return aggregator(df.groupby(groupby)) \
+        .reset_index()[[*groupby,  *columns]]
 
 
 def aggregate_monthly_per_polygon_across_years(df: pd.DataFrame,
                                                aggregator: Callable,
-                                               columns: list[str]) \
-        -> pd.DataFrame:
+                                               columns: list[str],
+                                               groupby: list[str] =
+                                               ['month', 'polygon_id'],
+                                               ) -> pd.DataFrame:
     ''' Calculate monthly aggregation for each polygon across all years. '''
-    return aggregator(df.groupby(['month', 'polygon_id'])) \
+    return aggregator(df.groupby(groupby)) \
         .reset_index() \
+<<<<<<< HEAD
+        .drop(columns=['year'])[[*groupby,  *columns]]
+=======
         .drop(columns=['year'])[['month', 'polygon_id',  *columns]]
 
 
@@ -144,3 +152,4 @@ def aggregate_number_of_shots(df: pd.DataFrame) -> pd.DataFrame:
     return df.groupby(['year', 'month', 'polygon_id']) \
         .count().reset_index() \
         .rename(columns={'pai': 'number'})[['year', 'month', 'polygon_id', 'number']]  # noqa: E501
+>>>>>>> main
