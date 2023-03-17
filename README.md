@@ -1,4 +1,4 @@
-# drought-with-gedi
+# Assessing the Impact of Droughts on Tropical Forests using GEDI
 Main repository for all the code of our team challenge where we investigate effects of drought using GEDI.
 
 <b> Overview </b>
