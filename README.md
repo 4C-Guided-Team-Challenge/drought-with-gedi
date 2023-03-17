@@ -9,14 +9,14 @@
 This project uses the following data sources:
 
 | Data source                                           | Availability                                                                  | Sensors                                     | Data                | Date range      | No. observations (used) |
-|-------------------------------------------------------|-------------------------------------------------------------------------------|---------------------------------------------|---------------------|-----------------|-------------------------|--------------|
-| GEDI Level 4A (v002)                                  | [public](https://lpdaac.usgs.gov/products/gedi02_av002/)                      | Space-borne LiDAR                           | Full-waveform LiDAR | 2019-2020       | 16 Mio.                |
-| CHIRPS Daily: Climate Hazards Group InfraRed Precipitation With Station Data | [Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/UCSB-CHG_CHIRPS_DAILY)                       | Space-borne multispectral imagery & weather stations | Precipitation    | 2001-2023  
-| MODIS MOD11A1.061 Terra Land Surface Temperature and Emissivity Daily Global 1km | [Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/MODIS_061_MOD11A1)                       | Space-borne multispectral imagery | Temperature    | 2001-2023  
-| MODIS MOD15A2H.061: Terra Leaf Area Index/FPAR 8-Day Global 500m | [Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/MODIS_061_MOD15A2H)                       | Space-borne multispectral imagery |  Photosynthetically Active Radiation
-(FPAR)    | 2001-2023  
-| MODIS MOD16A2.006: Terra Net Evapotranspiration 8-Day Global 500m | [Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MOD16A2)                       | Space-borne multispectral imagery | Evapotranspiration (ET) and Potential Evapotranspiration (PET)   | 2001-2023  
-| ERA5-Land Monthly Averaged by Hour of Day - ECMWF Climate Reanalysis | [Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/ECMWF_ERA5_LAND_MONTHLY_BY_HOUR)                       | Space-borne multispectral imagery (Landsat) | Surface Net Solar Radiation    | 2001-2023  
+|-------------------------------------------------------|-------------------------------------------------------------------------------|---------------------------------------------|---------------------|-----------------|-------------------------|
+| GEDI Level 2B (v002)                                  | [public](https://lpdaac.usgs.gov/products/gedi02_bv002/)                      | Space-borne LiDAR                           | Full-waveform LiDAR | 2019-2020       | 16 Mio.                |
+| CHIRPS Daily: Climate Hazards Group InfraRed Precipitation With Station Data | [Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/UCSB-CHG_CHIRPS_DAILY)                       | Space-borne multispectral imagery & weather stations | Precipitation    | 2001-2023 | -                       |  
+| MODIS MOD11A1.061 Terra Land Surface Temperature and Emissivity Daily Global 1km | [Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/MODIS_061_MOD11A1)                       | Space-borne multispectral imagery | Temperature    | 2001-2023  | -                       |
+| MODIS MOD15A2H.061: Terra Leaf Area Index/FPAR 8-Day Global 500m | [Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/MODIS_061_MOD15A2H)                       | Space-borne multispectral imagery |  Photosynthetically Active Radiation (FPAR)    | 2001-2023  | -                       |
+| MODIS MOD16A2.006: Terra Net Evapotranspiration 8-Day Global 500m | [Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MOD16A2)                       | Space-borne multispectral imagery | Evapotranspiration (ET) and Potential Evapotranspiration (PET)   | 2001-2023  | -                       |
+| ERA5-Land Monthly Averaged by Hour of Day - ECMWF Climate Reanalysis | [Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/ECMWF_ERA5_LAND_MONTHLY_BY_HOUR)                       | Space-borne multispectral imagery | Surface Net Solar Radiation    | 2001-2023  | -                       |
+
 
 <b> Overview </b>
 
