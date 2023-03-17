@@ -1,3 +1,14 @@
+'''
+This module contains methods for importing Vegetation Indices data
+from Google Earth Engine. The VIs are calculated from MODIS BRDF
+corrected product to reduce the influence of illumination and observation
+geometries. NDVI and EVI are retrieved from the 8 regions of interest.
+
+Before calling any of the methods, make sure to authenticate with earth
+engine. See: https://developers.google.com/earth-engine/guides/python_install#authentication # noqa
+for more details.
+'''
+
 import ee
 import pandas as pd
 from drought.data.aggregator import make_monthly_composite
