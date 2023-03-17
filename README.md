@@ -50,7 +50,3 @@ Traditional optical remote sensing techniques detect changes in canopy greenness
 <b> Goals </b>
 
 In this project, we will first use GEDI data to examine forest structural differences across longstanding climatic and seasonal water gradients in the Amazon basin. We will build on these results to evaluate the resilience of differently adapted forests to anomalous drought conditions. If there is time, we will have the opportunity to investigate other factors that mediate forest resilience, including proximity to roads and rivers and other environmental conditions. 
-
-<b> Directory Structure </b>
-
-All the core code for the project resides in the drought folder, with any data that is accessed being stored in the data folder. Important figures and results can be found in the reports folder. 
