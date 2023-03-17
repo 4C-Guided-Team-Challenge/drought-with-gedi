@@ -16,6 +16,7 @@ This project uses the following data sources:
 | MODIS MOD15A2H.061: Terra Leaf Area Index/FPAR 8-Day Global 500m | [Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/MODIS_061_MOD15A2H)                       | Space-borne multispectral imagery |  Photosynthetically Active Radiation (FPAR)    | 2001-2023  | -                       |
 | MODIS MOD16A2.006: Terra Net Evapotranspiration 8-Day Global 500m | [Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MOD16A2)                       | Space-borne multispectral imagery | Evapotranspiration (ET) and Potential Evapotranspiration (PET)   | 2001-2023  | -                       |
 | ERA5-Land Monthly Averaged by Hour of Day - ECMWF Climate Reanalysis | [Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/ECMWF_ERA5_LAND_MONTHLY_BY_HOUR)                       | Space-borne multispectral imagery | Surface Net Solar Radiation    | 2001-2023  | -                       |
+| TerraClimate: Monthly Climate and Climatic Water Balance for Global Terrestrial Surfaces, University of Idaho | [Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/IDAHO_EPSCOR_TERRACLIMATE)                       | Space-borne multispectral imagery | Palmer Drought Index    | 2001-2023  | -                       |
 
 ## Project Organization
 ```
