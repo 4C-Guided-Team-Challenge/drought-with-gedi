@@ -17,6 +17,29 @@ This project uses the following data sources:
 | MODIS MOD16A2.006: Terra Net Evapotranspiration 8-Day Global 500m | [Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MOD16A2)                       | Space-borne multispectral imagery | Evapotranspiration (ET) and Potential Evapotranspiration (PET)   | 2001-2023  | -                       |
 | ERA5-Land Monthly Averaged by Hour of Day - ECMWF Climate Reanalysis | [Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/ECMWF_ERA5_LAND_MONTHLY_BY_HOUR)                       | Space-borne multispectral imagery | Surface Net Solar Radiation    | 2001-2023  | -                       |
 
+## Project Organization
+```
+├── LICENSE
+├── Makefile           <- Makefile with commands like `make init` or `make test_environment`
+├── README.md          <- The top-level README for developers using this project.
+|
+├── notebooks          <- Jupyter notebooks.
+│   ├── exploratory    <- Notebooks for initial exploration. This is where all of our notebooks currently reside.
+│
+│
+├── requirements.txt   <- File containing all the required python packages. Use pip install -r requirements.txt to install them.
+│
+├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
+├── data               <- Directory that contains all of our intermediate data. Does not contain large data like GEDI. Mostly has monthly data aggregates.
+├── reports/figures    <- Directory that contains our results as figures.
+└── drought            <- Source code for use in this project.
+   ├── __init__.py    <- Makes drought a Python module
+   │
+   ├── data           <- Functions to download, process and analyze data.
+   │
+   └── visualization  <- Functions to plot and visualize data.
+```
+
 
 <b> Overview </b>
 
