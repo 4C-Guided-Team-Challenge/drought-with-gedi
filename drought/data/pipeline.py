@@ -3,6 +3,7 @@ from drought.data.aggregator import aggregate_monthly_per_polygon
 from drought.data.aggregator import aggregate_monthly_per_polygon_across_years
 from drought.data.ee_climate import get_monthly_climate_data_as_pdf, \
     CLIMATE_COLUMNS
+from drought.data.vi_extract import get_monthly_vi_data_as_pdf, VI_COLUMNS
 from drought.data.ee_converter import gdf_to_ee_polygon
 import ee
 import geopandas as gpd
@@ -15,6 +16,12 @@ START_DATE = '2019-01-01'
 
 # Final date of interest (exclusive).
 END_DATE = '2023-01-01'
+
+# Initial date of interest for Vegetation indexes (inclusive).
+START_DATE_VI = '2000-03-01'
+
+# Final date of interest for Vegetation indexes (exclusive).
+END_DATE_VI = '2023-02-01'
 
 # Raster resolution.
 SCALE = 5000
@@ -29,6 +36,8 @@ CLIMATE_MONTHLY_AGG_MEANS_CSV = "../../data/interim/climate_r_p_t_aggregate_mont
 GEDI_FOOTPRINTS = "/maps-priv/maps/drought-with-gedi/gedi_data/gedi_shots_level_2b.csv"  # noqa: E501
 GEDI_FILTERED_FOOTPRINTS = "/maps/drought-with-gedi/gedi_data/gedi_shots_level_2b_land_filtered.csv"  # noqa: E501
 GEDI_EXTENDED_FOOTPRINTS = "/maps-priv/maps/drought-with-gedi/gedi_data/gedi_shots_lebel_2b_extended.csv"  # noqa: E501
+VI_MONTHLY_MEANS_CSV = "../../data/interim/vi_monthly_mean_per_polygon_3-2000_to_1-2023.csv"  # noqa: E501
+VI_MONTHLY_AGG_MEANS_CSV = "../../data/interim/vi_aggregate_monthly_mean_per_polygon_3-2000_to_1-2023.csv"  # noqa: E501
 
 
 def get_gpd_polygons():
@@ -118,6 +127,36 @@ def generate_climate_monthly_data():
 
     # Save aggregate monthly means to a csv file.
     total_monthly_mean.to_csv(CLIMATE_MONTHLY_AGG_MEANS_CSV)
+
+
+def generate_vi_monthly_data():
+    ''' Generates monthly Vegetation Index and saves it to a CSV file.'''
+    ee.Initialize()
+
+    # Dates of interest.
+    start_date = ee.Date(START_DATE_VI)
+    end_date = ee.Date(END_DATE_VI)
+
+    # Get regions of interest.
+    ee_geoms = get_ee_polygons()
+
+    # Get monthly climate data as Pandas DataFrame.
+    vi_pdf = get_monthly_vi_data_as_pdf(
+        start_date, end_date, ee_geoms, SCALE)
+
+    # Calculate monthly mean per polygon.
+    monthly_mean = aggregate_monthly_per_polygon(
+        vi_pdf, lambda x: x.median(numeric_only=True), VI_COLUMNS)
+
+    # Save monthly means to a csv file.
+    monthly_mean.to_csv(VI_MONTHLY_MEANS_CSV)
+
+    # Calculate aggregate monthly means for across all the years.
+    total_monthly_mean = aggregate_monthly_per_polygon_across_years(
+        vi_pdf, lambda x: x.median(numeric_only=True), VI_COLUMNS)
+
+    # Save aggregate monthly means to a csv file.
+    total_monthly_mean.to_csv(VI_MONTHLY_AGG_MEANS_CSV)
 
 
 def get_monthly_means_per_polygon():
