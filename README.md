@@ -4,6 +4,7 @@
 
 ## Requirements
 - Python 3.9+
+- Packages in requirements.txt file. Can be installed via `pip install -r requirements.txt`.
 
 ## Project Summary
 
