@@ -35,7 +35,7 @@ CLIMATE_MONTHLY_MEANS_CSV = "../../data/interim/climate_r_p_t_monthly_mean_per_p
 CLIMATE_MONTHLY_AGG_MEANS_CSV = "../../data/interim/climate_r_p_t_aggregate_monthly_mean_per_polygon_1-2019_to_12-2022.csv"  # noqa: E501
 GEDI_FOOTPRINTS = "/maps-priv/maps/drought-with-gedi/gedi_data/gedi_shots_level_2b.csv"  # noqa: E501
 GEDI_FILTERED_FOOTPRINTS = "/maps/drought-with-gedi/gedi_data/gedi_shots_level_2b_land_filtered.csv"  # noqa: E501
-GEDI_EXTENDED_FOOTPRINTS = "/maps-priv/maps/drought-with-gedi/gedi_data/gedi_shots_lebel_2b_extended.csv"  # noqa: E501
+GEDI_EXTENDED_FOOTPRINTS = "/maps-priv/maps/drought-with-gedi/gedi_data/gedi_extended_filtered.csv"  # noqa: E501
 VI_MONTHLY_MEANS_CSV = "../../data/interim/vi_monthly_mean_per_polygon_3-2000_to_1-2023.csv"  # noqa: E501
 VI_MONTHLY_AGG_MEANS_CSV = "../../data/interim/vi_aggregate_monthly_mean_per_polygon_3-2000_to_1-2023.csv"  # noqa: E501
 
