@@ -5,6 +5,10 @@
 ## Requirements
 - Python 3.9+
 
+## Project Summary
+
+Tropical forests are critical elements of the biosphere, but face unprecedented threats in the face of deforestation and climate change. These potential threats include wavering trends in precipitation and water availability, the effects of which are yet to be clearly established. Recent advances in remote sensing technology, particularly the launch of the Global Ecosystem Dynamics Instrument (GEDI), allow us to evaluate the relationship between forest structure and drought conditions, including the GEDI-derived Plant and a range of climate variables such as precipitation, radiation, and temperature. We compare the response of PAI to precipitation across regions, run seasonality analyses, and study the impacts of anomalous drought. We hope that our study will provide valuable insights into the resilience of tropical forests facing drought, aiding conservation efforts to mitigate the impact of climate change on these vital ecosystems. 
+
 ## Data availability
 This project uses the following data sources:
 
@@ -17,6 +21,13 @@ This project uses the following data sources:
 | MODIS MOD16A2.006: Terra Net Evapotranspiration 8-Day Global 500m | [Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/MODIS_006_MOD16A2)                       | Space-borne multispectral imagery | Evapotranspiration (ET) and Potential Evapotranspiration (PET)   | 2001-2023  | -                       |
 | ERA5-Land Monthly Averaged by Hour of Day - ECMWF Climate Reanalysis | [Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/ECMWF_ERA5_LAND_MONTHLY_BY_HOUR)                       | Space-borne multispectral imagery | Surface Net Solar Radiation    | 2001-2023  | -                       |
 | TerraClimate: Monthly Climate and Climatic Water Balance for Global Terrestrial Surfaces, University of Idaho | [Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/IDAHO_EPSCOR_TERRACLIMATE)                       | Space-borne multispectral imagery | Palmer Drought Index    | 2001-2023  | -                       |
+
+
+**Note on data access**: In general, the data used in this project can be divided into three categories:
+* Aggregated data (for example monthly means for climate and GEDI) - stored on Github in `data/interim` folder.
+* Earth Engine non-aggregated climate data - requires [Earth Engine authentication and initialization](https://developers.google.com/earth-engine/guides/auth). The code should be able to download the necessary data upon execution.
+* GEDI footprints - we worked with more than 16 million raw GEDI footprints, and that data is too large to be saved here on GitHub. To obtain the data, we recommend following the instructions specified in this repo: https://github.com/ameliaholcomb/biomass-recovery/blob/main/README.md#data-download-and-setup or just working with NASA download directly.
+
 
 ## Project Organization
 ```
@@ -41,12 +52,22 @@ This project uses the following data sources:
    └── visualization  <- Functions to plot and visualize data.
 ```
 
+## General Project Guide
 
-<b> Overview </b>
+The project report containing all the background information and the summary of the analysis performed can be found at `reports/gtc2023_forest_dynamics.pdf`.
 
-The sustained functioning of forest ecosystems is critical to achieving global climate and biodiversity goals but the resilience of forests to the intensifying threat of climate change is poorly understood. In particular, severe droughts such as those experienced across Amazonia in 2005, 2010 & 2016 may well have killed millions of trees, with drought increasing the risk of mortality for tree species adapted to wet conditions. Forests that experience periods of low rainfall, such as seasonally dry tropical forests, are well adapted to these conditions with a greater occurrence of deciduousness and shorter canopy, however similar adaptions are debated in moist tropical forests. 
-Traditional optical remote sensing techniques detect changes in canopy greenness via Leaf Area Index (LAI) and Normalized Difference Vegetation Indices (NDVI), but these may be affected by optical artifacts and do not pick up reliable signals of canopy height and structure. GEDI, a space-borne lidar instrument, fills that gap with billions of forest structure measurements taken from the International Space Station. 
+### Navigating the code
 
-<b> Goals </b>
+We outline a brief guide on how to navigate the codebase, focusing on the notebooks:
 
-In this project, we will first use GEDI data to examine forest structural differences across longstanding climatic and seasonal water gradients in the Amazon basin. We will build on these results to evaluate the resilience of differently adapted forests to anomalous drought conditions. If there is time, we will have the opportunity to investigate other factors that mediate forest resilience, including proximity to roads and rivers and other environmental conditions. 
+* Data fetching, filtering and aggregating:
+  * Climate data - `notebooks/exploratory/ClimateData.ipynb`
+  * GEDI data - `notebooks/exploratory/GEDIDataAnalytics.ipynb`
+* Water availability and drought analyses:
+  * Seasonality  - `notebooks/exploratory/SeasonalAnalysis.ipynb`
+  * SPEI Calculation for each region - `notebooks/exploratory/CalculateSPEI.ipynb`
+  * Vegetation and climate variations across all regions - `notebooks/exploratory/AcrossPrecipitationGradient.ipynb`
+  * Polygon 2 drought analysis, including vertical PAI variations - `notebooks/exploratory/Polygon2Analysis.ipynb`
+  * Palmer Drought indeces and regression analysis - `notebooks/exploratory/EcosystemClustering.ipynb`
+
+
