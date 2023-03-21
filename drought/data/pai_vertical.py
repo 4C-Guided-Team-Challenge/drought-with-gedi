@@ -4,10 +4,10 @@ import numpy as np
 
 def transform_pai_z(df: pd.DataFrame):
     '''
-    Transforms the original pai_z array into a more useful set of columns: 
-    pai_z_np - numpy array representing cumulative vertical pai starting from 
+    Transforms the original pai_z array into a more useful set of columns:
+    pai_z_np - numpy array representing cumulative vertical pai starting from
     the lowest heights, pai_z_padded - same as pai_z_np but padded with zeros
-    so that all the arrays are of the same length of 30, pai_z_delta_np - 
+    so that all the arrays are of the same length of 30, pai_z_delta_np -
     delta PAI for each height bucket.
 
     NOTE: This function can run for a long time (~12 mins) for ~10 million
@@ -22,7 +22,7 @@ def transform_pai_z(df: pd.DataFrame):
 def transform_pai_z_array_to_np(df: pd.DataFrame):
     '''
     For some reason, pai_z is a string, so convert to a numpy array,
-    flip it around (so that the lowest heights come first in the array), 
+    flip it around (so that the lowest heights come first in the array),
     and trim zeros.
     '''
     df['pai_z_np'] = df.apply(lambda row: np.flip(np.trim_zeros(
