@@ -15,8 +15,6 @@ from drought.data.aggregator import make_monthly_composite
 from drought.data.ee_converter import get_region_as_df
 
 
-ee.Initialize()
-
 VI_COLUMNS = ['ndvi', 'evi']
 
 
