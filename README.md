@@ -1,4 +1,4 @@
-# Assessing the Impact of Droughts on Tropical Forests using GEDI
+# Assessing the Impact of Droughts on Tropical Forests using GEDI.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
